@@ -1,0 +1,424 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */; };
+		3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */; };
+		3F0C4DFB1E40E60BD9B8EB16 /* ShortcutItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A565DBFEECF44B49105D6E /* ShortcutItem.swift */; };
+		48367D7802D690D57AA24B8B /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7E03823B24CB153DC779B5 /* PermissionManager.swift */; };
+		514560114139174C970CCEBE /* AppMonitorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D194CB90CCF8F8983653D984 /* AppMonitorService.swift */; };
+		60021C1324A8B5E44DDB213D /* AppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0504ACBA1B7954A7FB925BCE /* AppShortcuts.swift */; };
+		8321FB44C1BCCD43C69C64EA /* AppHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1315C7D56911E2C07294C313 /* AppHeaderView.swift */; };
+		865666F491BDD26DA7210641 /* KeyCapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A80BA50091C1850C7F381900 /* KeyCapView.swift */; };
+		9936A35A2A68781BA2BE757C /* Notification+Names.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A04BA7230BB9CA6EE25C9F6 /* Notification+Names.swift */; };
+		9C3E057EC409FBF3A7FE363A /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */; };
+		C9C11DDBE6486F9A3044FA23 /* ShortcutRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84639C32C2EF5E2091BDF5 /* ShortcutRowView.swift */; };
+		D326C615590786FB6738BC10 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAACA7D9F270C0736646AF32 /* OverlayView.swift */; };
+		D70D765940851D25B665084B /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3CE42FA42D756CB6F5EC52 /* OverlayWindow.swift */; };
+		E2F5DC3B13873AB243A06ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */; };
+		F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */; };
+		F9FABE7CADF30C3F39053DB6 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25864CCA2E27CACCB49A655 /* AppInfo.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0504ACBA1B7954A7FB925BCE /* AppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShortcuts.swift; sourceTree = "<group>"; };
+		0C3CE42FA42D756CB6F5EC52 /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
+		1315C7D56911E2C07294C313 /* AppHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHeaderView.swift; sourceTree = "<group>"; };
+		1A04BA7230BB9CA6EE25C9F6 /* Notification+Names.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Names.swift"; sourceTree = "<group>"; };
+		1C84639C32C2EF5E2091BDF5 /* ShortcutRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRowView.swift; sourceTree = "<group>"; };
+		2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		420BEA3BA93FED205AA6A7A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		49A565DBFEECF44B49105D6E /* ShortcutItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutItem.swift; sourceTree = "<group>"; };
+		4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutOverlayApp.swift; sourceTree = "<group>"; };
+		9D7E03823B24CB153DC779B5 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		A80BA50091C1850C7F381900 /* KeyCapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCapView.swift; sourceTree = "<group>"; };
+		B640023BFE1CCD2242677213 /* ShortcutOverlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShortcutOverlay.entitlements; sourceTree = "<group>"; };
+		C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
+		CAACA7D9F270C0736646AF32 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
+		D194CB90CCF8F8983653D984 /* AppMonitorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMonitorService.swift; sourceTree = "<group>"; };
+		D532EE3F0FBD93B2DB99E1FC /* ShortcutOverlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShortcutOverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E25864CCA2E27CACCB49A655 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
+		E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		68619B803B3616533EBF3898 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		6CD8E5BAF661170747D654D1 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */,
+				420BEA3BA93FED205AA6A7A8 /* Info.plist */,
+				620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		74B64C473415AAE2FDD46B93 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D532EE3F0FBD93B2DB99E1FC /* ShortcutOverlay.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		904CF70E1E1D7939C04D43DC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B640023BFE1CCD2242677213 /* ShortcutOverlay.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		9E44793CE01509FDC45A700D /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				1A04BA7230BB9CA6EE25C9F6 /* Notification+Names.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		A4C32CDECE74FA87795404B7 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E25864CCA2E27CACCB49A655 /* AppInfo.swift */,
+				0504ACBA1B7954A7FB925BCE /* AppShortcuts.swift */,
+				49A565DBFEECF44B49105D6E /* ShortcutItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A64147C7E194C8487243DD0A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				68619B803B3616533EBF3898 /* Editor */,
+				BA57B70B6A94798B0FFC0AA0 /* Overlay */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A92767F1C18B1983CBB24A48 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D194CB90CCF8F8983653D984 /* AppMonitorService.swift */,
+				E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */,
+				9D7E03823B24CB153DC779B5 /* PermissionManager.swift */,
+				C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BA57B70B6A94798B0FFC0AA0 /* Overlay */ = {
+			isa = PBXGroup;
+			children = (
+				1315C7D56911E2C07294C313 /* AppHeaderView.swift */,
+				A80BA50091C1850C7F381900 /* KeyCapView.swift */,
+				CAACA7D9F270C0736646AF32 /* OverlayView.swift */,
+				0C3CE42FA42D756CB6F5EC52 /* OverlayWindow.swift */,
+				1C84639C32C2EF5E2091BDF5 /* ShortcutRowView.swift */,
+			);
+			path = Overlay;
+			sourceTree = "<group>";
+		};
+		CD99E7E13F82AF93CAC63DFB /* ShortcutOverlay */ = {
+			isa = PBXGroup;
+			children = (
+				6CD8E5BAF661170747D654D1 /* App */,
+				9E44793CE01509FDC45A700D /* Extensions */,
+				A4C32CDECE74FA87795404B7 /* Models */,
+				904CF70E1E1D7939C04D43DC /* Resources */,
+				A92767F1C18B1983CBB24A48 /* Services */,
+				A64147C7E194C8487243DD0A /* Views */,
+			);
+			path = ShortcutOverlay;
+			sourceTree = "<group>";
+		};
+		D561040E8FAD94EA6899042D = {
+			isa = PBXGroup;
+			children = (
+				CD99E7E13F82AF93CAC63DFB /* ShortcutOverlay */,
+				74B64C473415AAE2FDD46B93 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C2F221D953C18FAA2D62DFCB /* ShortcutOverlay */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA6B17FB5757B849CDA48733 /* Build configuration list for PBXNativeTarget "ShortcutOverlay" */;
+			buildPhases = (
+				35760B3B266697246014C77E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShortcutOverlay;
+			packageProductDependencies = (
+			);
+			productName = ShortcutOverlay;
+			productReference = D532EE3F0FBD93B2DB99E1FC /* ShortcutOverlay.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B7868B980E828B968C20C977 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = CB1DB27B754FB8E505A7A300 /* Build configuration list for PBXProject "ShortcutOverlay" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D561040E8FAD94EA6899042D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C2F221D953C18FAA2D62DFCB /* ShortcutOverlay */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		35760B3B266697246014C77E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E2F5DC3B13873AB243A06ED0 /* AppDelegate.swift in Sources */,
+				8321FB44C1BCCD43C69C64EA /* AppHeaderView.swift in Sources */,
+				F9FABE7CADF30C3F39053DB6 /* AppInfo.swift in Sources */,
+				514560114139174C970CCEBE /* AppMonitorService.swift in Sources */,
+				60021C1324A8B5E44DDB213D /* AppShortcuts.swift in Sources */,
+				9C3E057EC409FBF3A7FE363A /* EditorView.swift in Sources */,
+				0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */,
+				865666F491BDD26DA7210641 /* KeyCapView.swift in Sources */,
+				9936A35A2A68781BA2BE757C /* Notification+Names.swift in Sources */,
+				D326C615590786FB6738BC10 /* OverlayView.swift in Sources */,
+				D70D765940851D25B665084B /* OverlayWindow.swift in Sources */,
+				48367D7802D690D57AA24B8B /* PermissionManager.swift in Sources */,
+				3F0C4DFB1E40E60BD9B8EB16 /* ShortcutItem.swift in Sources */,
+				F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */,
+				C9C11DDBE6486F9A3044FA23 /* ShortcutRowView.swift in Sources */,
+				3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		80EE11D3921597B16945ADC6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = ShortcutOverlay/Resources/ShortcutOverlay.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.ShortcutOverlay;
+				PRODUCT_NAME = ShortcutOverlay;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		8A2605FEE8134414EED0569E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		9D3499E48F07D40CB2482A27 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = ShortcutOverlay/Resources/ShortcutOverlay.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.ShortcutOverlay;
+				PRODUCT_NAME = ShortcutOverlay;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		CA89FF387CA7D20395CF4D3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CA6B17FB5757B849CDA48733 /* Build configuration list for PBXNativeTarget "ShortcutOverlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80EE11D3921597B16945ADC6 /* Debug */,
+				9D3499E48F07D40CB2482A27 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CB1DB27B754FB8E505A7A300 /* Build configuration list for PBXProject "ShortcutOverlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA89FF387CA7D20395CF4D3D /* Debug */,
+				8A2605FEE8134414EED0569E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B7868B980E828B968C20C977 /* Project object */;
+}

@@ -1,0 +1,46 @@
+name: ShortcutOverlay
+
+options:
+  bundleIdPrefix: com.docketai
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+
+settings:
+  MARKETING_VERSION: "1.0.0"
+  CURRENT_PROJECT_VERSION: "1"
+  SWIFT_VERSION: "5.9"
+  MACOSX_DEPLOYMENT_TARGET: "13.0"
+
+targets:
+  ShortcutOverlay:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+
+    sources:
+      - path: ShortcutOverlay
+        excludes:
+          - "**/.DS_Store"
+
+    settings:
+      base:
+        PRODUCT_NAME: ShortcutOverlay
+        PRODUCT_BUNDLE_IDENTIFIER: com.docketai.ShortcutOverlay
+        INFOPLIST_FILE: ShortcutOverlay/App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ShortcutOverlay/Resources/ShortcutOverlay.entitlements
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_HARDENED_RUNTIME: YES
+        COMBINE_HIDPI_IMAGES: YES
+        SWIFT_VERSION: "5.9"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        GENERATE_INFOPLIST_FILE: NO
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+
+    scheme:
+      testTargets: []
+      gatherCoverageData: false

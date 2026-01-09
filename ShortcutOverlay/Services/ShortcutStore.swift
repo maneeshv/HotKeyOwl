@@ -1,0 +1,197 @@
+import Foundation
+import Combine
+
+/// Manages storage and retrieval of keyboard shortcuts for applications
+class ShortcutStore: ObservableObject {
+    @Published private(set) var allShortcuts: [String: AppShortcuts] = [:]
+
+    private let fileManager = FileManager.default
+    private let storageURL: URL
+
+    init() {
+        // Get Application Support directory
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appDirectory = appSupport.appendingPathComponent("ShortcutOverlay", isDirectory: true)
+
+        // Create directory if needed
+        try? fileManager.createDirectory(at: appDirectory, withIntermediateDirectories: true)
+
+        storageURL = appDirectory.appendingPathComponent("shortcuts.json")
+
+        // Load existing data
+        load()
+    }
+
+    // MARK: - Persistence
+
+    func load() {
+        guard fileManager.fileExists(atPath: storageURL.path) else {
+            // Load default shortcuts for common apps
+            loadDefaults()
+            return
+        }
+
+        do {
+            let data = try Data(contentsOf: storageURL)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            allShortcuts = try decoder.decode([String: AppShortcuts].self, from: data)
+        } catch {
+            print("Failed to load shortcuts: \(error)")
+            loadDefaults()
+        }
+    }
+
+    func save() {
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try encoder.encode(allShortcuts)
+            try data.write(to: storageURL, options: .atomic)
+        } catch {
+            print("Failed to save shortcuts: \(error)")
+        }
+    }
+
+    // MARK: - CRUD Operations
+
+    func getShortcuts(for bundleIdentifier: String) -> [ShortcutItem] {
+        return allShortcuts[bundleIdentifier]?.shortcuts ?? []
+    }
+
+    func getAppShortcuts(for bundleIdentifier: String) -> AppShortcuts? {
+        return allShortcuts[bundleIdentifier]
+    }
+
+    func setShortcuts(_ shortcuts: [ShortcutItem], for bundleIdentifier: String, appName: String) {
+        allShortcuts[bundleIdentifier] = AppShortcuts(
+            bundleIdentifier: bundleIdentifier,
+            appName: appName,
+            shortcuts: shortcuts
+        )
+        save()
+    }
+
+    func addShortcut(_ shortcut: ShortcutItem, for bundleIdentifier: String, appName: String) {
+        if var appShortcuts = allShortcuts[bundleIdentifier] {
+            appShortcuts.shortcuts.append(shortcut)
+            appShortcuts.lastModified = Date()
+            allShortcuts[bundleIdentifier] = appShortcuts
+        } else {
+            allShortcuts[bundleIdentifier] = AppShortcuts(
+                bundleIdentifier: bundleIdentifier,
+                appName: appName,
+                shortcuts: [shortcut]
+            )
+        }
+        save()
+    }
+
+    func updateShortcut(_ shortcut: ShortcutItem, for bundleIdentifier: String) {
+        guard var appShortcuts = allShortcuts[bundleIdentifier] else { return }
+
+        if let index = appShortcuts.shortcuts.firstIndex(where: { $0.id == shortcut.id }) {
+            appShortcuts.shortcuts[index] = shortcut
+            appShortcuts.lastModified = Date()
+            allShortcuts[bundleIdentifier] = appShortcuts
+            save()
+        }
+    }
+
+    func deleteShortcut(id: UUID, for bundleIdentifier: String) {
+        guard var appShortcuts = allShortcuts[bundleIdentifier] else { return }
+
+        appShortcuts.shortcuts.removeAll { $0.id == id }
+        appShortcuts.lastModified = Date()
+        allShortcuts[bundleIdentifier] = appShortcuts
+        save()
+    }
+
+    func deleteAllShortcuts(for bundleIdentifier: String) {
+        allShortcuts.removeValue(forKey: bundleIdentifier)
+        save()
+    }
+
+    // MARK: - Default Shortcuts
+
+    private func loadDefaults() {
+        allShortcuts = [
+            "com.apple.Safari": AppShortcuts(
+                bundleIdentifier: "com.apple.Safari",
+                appName: "Safari",
+                shortcuts: [
+                    ShortcutItem(key: "T", modifiers: ["⌘"], description: "New Tab"),
+                    ShortcutItem(key: "W", modifiers: ["⌘"], description: "Close Tab"),
+                    ShortcutItem(key: "R", modifiers: ["⌘"], description: "Reload Page"),
+                    ShortcutItem(key: "L", modifiers: ["⌘"], description: "Focus URL Bar"),
+                    ShortcutItem(key: "T", modifiers: ["⌘", "⇧"], description: "Reopen Closed Tab"),
+                    ShortcutItem(key: "[", modifiers: ["⌘"], description: "Back"),
+                    ShortcutItem(key: "]", modifiers: ["⌘"], description: "Forward"),
+                    ShortcutItem(key: "N", modifiers: ["⌘"], description: "New Window"),
+                    ShortcutItem(key: "+", modifiers: ["⌘"], description: "Zoom In"),
+                    ShortcutItem(key: "-", modifiers: ["⌘"], description: "Zoom Out"),
+                ]
+            ),
+            "com.apple.finder": AppShortcuts(
+                bundleIdentifier: "com.apple.finder",
+                appName: "Finder",
+                shortcuts: [
+                    ShortcutItem(key: "N", modifiers: ["⌘"], description: "New Finder Window"),
+                    ShortcutItem(key: "⌫", modifiers: ["⌘"], description: "Move to Trash"),
+                    ShortcutItem(key: "I", modifiers: ["⌘"], description: "Get Info"),
+                    ShortcutItem(key: "D", modifiers: ["⌘"], description: "Duplicate"),
+                    ShortcutItem(key: "N", modifiers: ["⌘", "⇧"], description: "New Folder"),
+                    ShortcutItem(key: ".", modifiers: ["⌘", "⇧"], description: "Show Hidden Files"),
+                    ShortcutItem(key: "G", modifiers: ["⌘", "⇧"], description: "Go to Folder"),
+                    ShortcutItem(key: "↓", modifiers: ["⌘"], description: "Open Selected Item"),
+                ]
+            ),
+            "com.google.Chrome": AppShortcuts(
+                bundleIdentifier: "com.google.Chrome",
+                appName: "Chrome",
+                shortcuts: [
+                    ShortcutItem(key: "T", modifiers: ["⌘"], description: "New Tab"),
+                    ShortcutItem(key: "W", modifiers: ["⌘"], description: "Close Tab"),
+                    ShortcutItem(key: "R", modifiers: ["⌘"], description: "Reload Page"),
+                    ShortcutItem(key: "L", modifiers: ["⌘"], description: "Focus Omnibox"),
+                    ShortcutItem(key: "T", modifiers: ["⌘", "⇧"], description: "Reopen Closed Tab"),
+                    ShortcutItem(key: "N", modifiers: ["⌘", "⇧"], description: "New Incognito Window"),
+                    ShortcutItem(key: "Y", modifiers: ["⌘"], description: "Open History"),
+                    ShortcutItem(key: "J", modifiers: ["⌘", "⌥"], description: "Open DevTools"),
+                    ShortcutItem(key: "[", modifiers: ["⌘"], description: "Back"),
+                    ShortcutItem(key: "]", modifiers: ["⌘"], description: "Forward"),
+                ]
+            ),
+            "com.microsoft.VSCode": AppShortcuts(
+                bundleIdentifier: "com.microsoft.VSCode",
+                appName: "VS Code",
+                shortcuts: [
+                    ShortcutItem(key: "P", modifiers: ["⌘"], description: "Quick Open File"),
+                    ShortcutItem(key: "P", modifiers: ["⌘", "⇧"], description: "Command Palette"),
+                    ShortcutItem(key: "B", modifiers: ["⌘"], description: "Toggle Sidebar"),
+                    ShortcutItem(key: "J", modifiers: ["⌘"], description: "Toggle Terminal"),
+                    ShortcutItem(key: "S", modifiers: ["⌘", "K"], description: "Keyboard Shortcuts"),
+                    ShortcutItem(key: "F", modifiers: ["⌥", "⇧"], description: "Format Document"),
+                    ShortcutItem(key: "F", modifiers: ["⌘"], description: "Find"),
+                    ShortcutItem(key: "H", modifiers: ["⌘", "⇧"], description: "Replace"),
+                    ShortcutItem(key: "/", modifiers: ["⌘"], description: "Toggle Comment"),
+                    ShortcutItem(key: "S", modifiers: ["⌘"], description: "Save"),
+                ]
+            )
+        ]
+        save()
+    }
+
+    // MARK: - Utility
+
+    var configuredApps: [AppInfo] {
+        allShortcuts.values.map { appShortcuts in
+            AppInfo(
+                bundleIdentifier: appShortcuts.bundleIdentifier,
+                name: appShortcuts.appName,
+                icon: AppInfo.icon(for: appShortcuts.bundleIdentifier)
+            )
+        }.sorted { $0.name < $1.name }
+    }
+}
