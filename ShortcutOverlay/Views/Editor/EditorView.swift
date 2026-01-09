@@ -297,16 +297,28 @@ struct ShortcutFormSheet: View {
             Text("for \(appInfo.name)")
                 .foregroundColor(.secondary)
 
-            Form {
-                Section("Shortcut") {
+            VStack(alignment: .leading, spacing: 16) {
+                // Shortcut section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Shortcut")
+                        .font(.headline)
                     ShortcutRecorderField(capturedShortcut: $capturedShortcut)
                 }
 
-                Section("Description") {
+                // Description section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Description")
+                        .font(.headline)
                     TextField("What does this shortcut do?", text: $description)
+                        .textFieldStyle(.roundedBorder)
                 }
             }
-            .formStyle(.grouped)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
+            .cornerRadius(8)
+
+            Spacer()
 
             HStack {
                 Button("Cancel") {
@@ -325,7 +337,7 @@ struct ShortcutFormSheet: View {
             .padding(.horizontal)
         }
         .padding()
-        .frame(width: 450, height: 400)
+        .frame(width: 500, height: 380)
     }
 
     private func saveShortcut() {
