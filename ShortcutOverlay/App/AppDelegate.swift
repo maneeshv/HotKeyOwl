@@ -10,12 +10,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayWindow: OverlayWindow?
 
     // Services
-    private let hotkeyService = HotkeyService()
+    private let preferencesManager = PreferencesManager()
+    private lazy var hotkeyService = HotkeyService(preferencesManager: preferencesManager)
     private let appMonitorService = AppMonitorService()
     private let shortcutStore = ShortcutStore()
 
-    // Editor window reference
+    // Window references
     private var editorWindow: NSWindow?
+    private var settingsWindow: NSWindow?
 
     // MARK: - App Lifecycle
 
@@ -60,9 +62,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateMenu() {
         let menu = NSMenu()
 
-        // Info item
+        // Info item (use dynamic hotkey)
+        let hotkeyText = hotkeyService.hotkeyDescription
         let infoItem = NSMenuItem(
-            title: "Hold ⌃⌥⌘0 to Show Shortcuts",
+            title: "Hold \(hotkeyText) to Show Shortcuts",
             action: nil,
             keyEquivalent: ""
         )
@@ -114,11 +117,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
+        // Settings
+        menu.addItem(NSMenuItem(
+            title: "Settings…",
+            action: #selector(openSettings),
+            keyEquivalent: ","
+        ))
+
         // Edit Shortcuts
         menu.addItem(NSMenuItem(
             title: "Edit Shortcuts…",
             action: #selector(openEditor),
-            keyEquivalent: ","
+            keyEquivalent: ""
         ))
 
         menu.addItem(NSMenuItem.separator())
@@ -250,6 +260,61 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             queue: .main
         ) { [weak self] _ in
             self?.editorWindow = nil
+            if let observer = closeObserver {
+                NotificationCenter.default.removeObserver(observer)
+            }
+        }
+
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc private func openSettings() {
+        // If settings window already exists, bring it to front
+        if let existingWindow = settingsWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        // Create settings view
+        let settingsView = SettingsView(
+            preferencesManager: preferencesManager,
+            hotkeyService: hotkeyService,
+            onSave: { [weak self] in
+                self?.settingsWindow?.close()
+                // Update menu bar to reflect new hotkey
+                self?.updateMenu()
+            },
+            onCancel: { [weak self] in
+                self?.settingsWindow?.close()
+            }
+        )
+
+        // Create window
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+
+        window.title = "Settings"
+        window.contentView = NSHostingView(rootView: settingsView)
+        window.center()
+        window.isReleasedWhenClosed = false
+
+        // Store reference
+        settingsWindow = window
+
+        // Handle window close
+        var closeObserver: NSObjectProtocol?
+        closeObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            self?.settingsWindow = nil
             if let observer = closeObserver {
                 NotificationCenter.default.removeObserver(observer)
             }

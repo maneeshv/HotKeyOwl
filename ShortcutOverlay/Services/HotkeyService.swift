@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import Carbon
 
-/// Manages global keyboard monitoring for the hotkey (Cmd+Ctrl+0)
+/// Manages global keyboard monitoring for the hotkey
 class HotkeyService: ObservableObject {
     // MARK: - Properties
 
@@ -18,13 +18,19 @@ class HotkeyService: ObservableObject {
     private var isCurrentlyPressed = false
     private var overlayShown = false
 
-    // Target: Ctrl + Option + Cmd + 0
-    private let targetKeyCode: CGKeyCode = 29  // "0" key
-    private let requiredModifiers: CGEventFlags = [.maskControl, .maskAlternate, .maskCommand]
+    // Target hotkey (configurable)
+    private var targetKeyCode: CGKeyCode
+    private var requiredModifiers: CGEventFlags
+    private let preferencesManager: PreferencesManager
 
     // MARK: - Initialization
 
-    init() {}
+    init(preferencesManager: PreferencesManager) {
+        self.preferencesManager = preferencesManager
+        let hotkey = preferencesManager.globalHotkey
+        self.targetKeyCode = hotkey.cgKeyCode
+        self.requiredModifiers = hotkey.cgModifiers
+    }
 
     deinit {
         stopMonitoring()
@@ -210,6 +216,13 @@ class HotkeyService: ObservableObject {
 
     /// Get the hotkey description
     var hotkeyDescription: String {
-        return "⌃⌥⌘0"
+        return preferencesManager.globalHotkey.displayString
+    }
+
+    /// Update hotkey configuration (called when user changes settings)
+    func updateHotkey(_ config: AppPreferences.HotkeyConfiguration) {
+        targetKeyCode = config.cgKeyCode
+        requiredModifiers = config.cgModifiers
+        print("🔄 Updated hotkey to: \(config.displayString)")
     }
 }
