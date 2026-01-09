@@ -18,6 +18,7 @@
 		865666F491BDD26DA7210641 /* KeyCapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A80BA50091C1850C7F381900 /* KeyCapView.swift */; };
 		9936A35A2A68781BA2BE757C /* Notification+Names.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A04BA7230BB9CA6EE25C9F6 /* Notification+Names.swift */; };
 		9C3E057EC409FBF3A7FE363A /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */; };
+		9E618775772FDA60A22EE558 /* ShortcutRecorderField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7A319CD1F09EE3B2EA6864 /* ShortcutRecorderField.swift */; };
 		9ECAD161F77CE08A0AD3FFD4 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5BD7D919C40FB44543D0B01 /* AppPreferences.swift */; };
 		AAE8212E9FDC26B05959CDBE /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5826BD717EF2106ABA788E03 /* SettingsView.swift */; };
 		C9C11DDBE6486F9A3044FA23 /* ShortcutRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84639C32C2EF5E2091BDF5 /* ShortcutRowView.swift */; };
@@ -27,6 +28,7 @@
 		E2F5DC3B13873AB243A06ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */; };
 		F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */; };
 		F9FABE7CADF30C3F39053DB6 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25864CCA2E27CACCB49A655 /* AppInfo.swift */; };
+		FBB26022DC126DE17476F2FF /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,7 @@
 		5826BD717EF2106ABA788E03 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutOverlayApp.swift; sourceTree = "<group>"; };
 		8028EBB14F56745C031F2DA3 /* PreferencesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesManager.swift; sourceTree = "<group>"; };
+		84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
 		9D7E03823B24CB153DC779B5 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
 		A80BA50091C1850C7F381900 /* KeyCapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCapView.swift; sourceTree = "<group>"; };
 		B640023BFE1CCD2242677213 /* ShortcutOverlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShortcutOverlay.entitlements; sourceTree = "<group>"; };
@@ -51,6 +54,7 @@
 		CAACA7D9F270C0736646AF32 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		D194CB90CCF8F8983653D984 /* AppMonitorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMonitorService.swift; sourceTree = "<group>"; };
 		D532EE3F0FBD93B2DB99E1FC /* ShortcutOverlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShortcutOverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DF7A319CD1F09EE3B2EA6864 /* ShortcutRecorderField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderField.swift; sourceTree = "<group>"; };
 		E25864CCA2E27CACCB49A655 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -60,6 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */,
+				DF7A319CD1F09EE3B2EA6864 /* ShortcutRecorderField.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -123,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				D194CB90CCF8F8983653D984 /* AppMonitorService.swift */,
+				84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */,
 				E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */,
 				9D7E03823B24CB153DC779B5 /* PermissionManager.swift */,
 				8028EBB14F56745C031F2DA3 /* PreferencesManager.swift */,
@@ -232,6 +238,7 @@
 				514560114139174C970CCEBE /* AppMonitorService.swift in Sources */,
 				9ECAD161F77CE08A0AD3FFD4 /* AppPreferences.swift in Sources */,
 				60021C1324A8B5E44DDB213D /* AppShortcuts.swift in Sources */,
+				FBB26022DC126DE17476F2FF /* ConfigurationManager.swift in Sources */,
 				9C3E057EC409FBF3A7FE363A /* EditorView.swift in Sources */,
 				85568CA6BEE6CC0F385403E3 /* HotkeyRecorderView.swift in Sources */,
 				0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */,
@@ -244,6 +251,7 @@
 				AAE8212E9FDC26B05959CDBE /* SettingsView.swift in Sources */,
 				3F0C4DFB1E40E60BD9B8EB16 /* ShortcutItem.swift in Sources */,
 				F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */,
+				9E618775772FDA60A22EE558 /* ShortcutRecorderField.swift in Sources */,
 				C9C11DDBE6486F9A3044FA23 /* ShortcutRowView.swift in Sources */,
 				3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */,
 			);

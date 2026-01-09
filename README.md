@@ -8,20 +8,27 @@ A macOS menu bar utility that displays keyboard shortcuts for the currently acti
 
 ## Features
 
-✨ **Global Hotkey**: Press and hold `⌘⌃0` (Command + Control + 0) to show shortcuts for the active app
+✨ **Customizable Global Hotkey**: Set your own hotkey combination via Settings (default: `⌃⌥⌘0`)
 🎯 **Auto-detection**: Automatically detects the frontmost application
 🎨 **Beautiful Overlay**: Semi-transparent (80% opacity), centered overlay with app icon and shortcuts list
 📱 **Menu Bar App**: Easy access via menu bar icon, no Dock presence
+⌨️ **Interactive Shortcut Capture**: Press actual keys instead of typing - no more manual entry!
 ✏️ **Shortcut Management**: Add, edit, and delete shortcuts for any application
 💾 **Persistent Storage**: Shortcuts saved locally in JSON format
+📤 **Import/Export**: Back up and restore your shortcuts configuration as JSON
 📦 **Pre-configured**: Includes shortcuts for Safari, Finder, Chrome, and VS Code
 
 ## Demo
 
-**Press and Hold ⌘⌃0**: Overlay appears showing shortcuts for the current app
+**Press and Hold Your Hotkey** (default: `⌃⌥⌘0`): Overlay appears showing shortcuts for the current app
 **Release**: Overlay disappears instantly
 
 The overlay stays on top, centered, and doesn't steal focus from your work.
+
+**New in v1.1:**
+- 🎛️ Customize your global hotkey in Settings
+- ⌨️ Add shortcuts by pressing actual keys (no manual typing!)
+- 📤 Export and import your shortcuts configuration
 
 ## Requirements
 
@@ -71,43 +78,90 @@ ShortcutOverlay requires **Accessibility** permission to monitor the global hotk
 4. Enable **ShortcutOverlay** in the list
 5. Restart ShortcutOverlay
 
-**Without this permission**, the app will still work, but the global hotkey (⌘⌃0) won't function.
+**Without this permission**, the app will still work, but the global hotkey won't function.
 
 ### Why This Permission?
 
-ShortcutOverlay uses macOS's `CGEventTap` API to detect when you press and hold ⌘⌃0, regardless of which app is active. This requires Accessibility permission for security reasons.
+ShortcutOverlay uses macOS's `CGEventTap` API to detect when you press and hold your configured hotkey, regardless of which app is active. This requires Accessibility permission for security reasons.
 
 ## Usage
 
 ### Show Shortcuts Overlay
 
-1. **Press and hold** `⌘⌃0` (Command + Control + 0)
+1. **Press and hold** your configured hotkey (default: `⌃⌥⌘0`)
 2. The overlay appears showing shortcuts for the active application
 3. **Release** the keys to hide the overlay
+
+### Configure Custom Hotkey
+
+**NEW!** You can now set your own global hotkey:
+
+1. Click the menu bar icon (⌘)
+2. Select **"Settings..."** (or press `⌘,`)
+3. Click the hotkey field and press your desired key combination
+4. Click **"Save"**
+
+**Tips:**
+- Must include at least one modifier key (⌘⌃⌥⇧) or be a function key (F1-F12)
+- Avoid system shortcuts like `⌘Q`, `⌘W`, `⌘Tab`
+- The app will warn you if you try to use a reserved shortcut
+- Your hotkey is saved automatically and persists across restarts
 
 ### Manage Shortcuts
 
 **Via Menu Bar Icon**:
 
-1. Click the keyboard icon in your menu bar
+1. Click the menu bar icon (⌘)
 2. Select **"Edit Shortcuts..."**
 3. Choose an application from the dropdown
 4. Click **"Add Shortcut"** to add a new one
-5. Fill in:
-   - **Modifiers**: ⌘ Command, ⇧ Shift, ⌥ Option, ⌃ Control
-   - **Key**: The key to press (e.g., C, V, Tab, ↩︎)
-   - **Description**: What the shortcut does
-6. Click **"Save"**
+5. **NEW!** Click the shortcut field and **press the actual keys** (e.g., press `⌘⇧N`)
+   - The field turns red while recording
+   - Press `Escape` to cancel
+   - Click "Clear" to remove a captured shortcut
+6. Enter a description (e.g., "New Window")
+7. Click **"Save"**
 
 **Edit or Delete**:
 - Click the pencil icon to edit an existing shortcut
 - Click the trash icon to delete
+
+**Benefits of Interactive Capture:**
+- ✅ No manual typing - press the actual keys!
+- ✅ Automatically handles special keys (arrows, delete, function keys)
+- ✅ Real-time validation prevents invalid combinations
+- ✅ Visual feedback with color-coded states
 
 ### Choose Specific App
 
 1. Click the menu bar icon
 2. Hover over **"Choose App..."**
 3. Select an application to quickly edit its shortcuts
+
+### Import/Export Configuration
+
+**NEW!** Back up and restore your shortcuts:
+
+**Export:**
+1. Click the menu bar icon → **"Export Configuration..."**
+2. Choose save location
+3. File is saved as pretty-printed JSON (e.g., `shortcuts-2026-01-09.json`)
+
+**Import:**
+1. Click the menu bar icon → **"Import Configuration..."**
+2. Select a JSON configuration file
+3. Choose merge strategy:
+   - **Replace All**: Replace all existing shortcuts with imported ones
+   - **Merge**: Keep existing shortcuts for unlisted apps, replace apps in import
+   - **Append**: Add imported shortcuts to existing (may create duplicates)
+4. Click your choice to import
+
+**Use Cases:**
+- 📁 **Backup**: Export before making major changes
+- 🔄 **Sync**: Share configurations between machines
+- 📝 **Version Control**: Track shortcuts in Git
+- 👥 **Team Sharing**: Share standard shortcuts with colleagues
+- ✏️ **Bulk Editing**: Export, edit JSON in text editor, re-import
 
 ## Pre-configured Apps
 

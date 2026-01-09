@@ -266,12 +266,8 @@ struct ShortcutFormSheet: View {
     let onSave: (ShortcutItem) -> Void
     let onCancel: () -> Void
 
-    @State private var key: String = ""
+    @State private var capturedShortcut: CapturedShortcut?
     @State private var description: String = ""
-    @State private var useCommand = false
-    @State private var useShift = false
-    @State private var useOption = false
-    @State private var useControl = false
 
     init(appInfo: AppInfo, shortcut: ShortcutItem?, onSave: @escaping (ShortcutItem) -> Void, onCancel: @escaping () -> Void) {
         self.appInfo = appInfo
@@ -281,12 +277,14 @@ struct ShortcutFormSheet: View {
 
         // Initialize with existing values if editing
         if let shortcut = shortcut {
-            _key = State(initialValue: shortcut.key)
             _description = State(initialValue: shortcut.description)
-            _useCommand = State(initialValue: shortcut.modifiers.contains("⌘"))
-            _useShift = State(initialValue: shortcut.modifiers.contains("⇧"))
-            _useOption = State(initialValue: shortcut.modifiers.contains("⌥"))
-            _useControl = State(initialValue: shortcut.modifiers.contains("⌃"))
+            // Create a CapturedShortcut from existing data
+            _capturedShortcut = State(initialValue: CapturedShortcut(
+                key: shortcut.key,
+                modifiers: shortcut.modifiers,
+                keyCode: 0,  // We don't store keyCode in ShortcutItem
+                modifierFlags: CGEventFlags(rawValue: 0)  // We don't store flags in ShortcutItem
+            ))
         }
     }
 
@@ -300,15 +298,8 @@ struct ShortcutFormSheet: View {
                 .foregroundColor(.secondary)
 
             Form {
-                Section("Modifiers") {
-                    Toggle("⌘ Command", isOn: $useCommand)
-                    Toggle("⇧ Shift", isOn: $useShift)
-                    Toggle("⌥ Option", isOn: $useOption)
-                    Toggle("⌃ Control", isOn: $useControl)
-                }
-
-                Section("Key") {
-                    TextField("Key (e.g., C, V, Tab, ↩︎)", text: $key)
+                Section("Shortcut") {
+                    ShortcutRecorderField(capturedShortcut: $capturedShortcut)
                 }
 
                 Section("Description") {
@@ -329,25 +320,21 @@ struct ShortcutFormSheet: View {
                     saveShortcut()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(key.isEmpty || description.isEmpty)
+                .disabled(capturedShortcut == nil || description.isEmpty)
             }
             .padding(.horizontal)
         }
         .padding()
-        .frame(width: 400, height: 450)
+        .frame(width: 450, height: 400)
     }
 
     private func saveShortcut() {
-        var modifiers: [String] = []
-        if useCommand { modifiers.append("⌘") }
-        if useControl { modifiers.append("⌃") }
-        if useOption { modifiers.append("⌥") }
-        if useShift { modifiers.append("⇧") }
+        guard let captured = capturedShortcut else { return }
 
         let newShortcut = ShortcutItem(
             id: shortcut?.id ?? UUID(),
-            key: key,
-            modifiers: modifiers,
+            key: captured.key,
+            modifiers: captured.modifiers,
             description: description
         )
 

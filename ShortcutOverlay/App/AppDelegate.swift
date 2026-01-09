@@ -133,6 +133,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
+        // Import Configuration
+        menu.addItem(NSMenuItem(
+            title: "Import Configuration…",
+            action: #selector(importConfiguration),
+            keyEquivalent: ""
+        ))
+
+        // Export Configuration
+        menu.addItem(NSMenuItem(
+            title: "Export Configuration…",
+            action: #selector(exportConfiguration),
+            keyEquivalent: ""
+        ))
+
+        menu.addItem(NSMenuItem.separator())
+
         // Quit
         menu.addItem(NSMenuItem(
             title: "Quit ShortcutOverlay",
@@ -322,5 +338,115 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    // MARK: - Import/Export
+
+    @objc private func importConfiguration() {
+        let panel = NSOpenPanel()
+        panel.title = "Import Shortcuts Configuration"
+        panel.message = "Select a JSON configuration file to import"
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.json]
+
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+
+            // Ask for merge strategy
+            self?.showMergeStrategyDialog { strategy in
+                do {
+                    try self?.shortcutStore.importConfiguration(from: url, strategy: strategy)
+                    self?.showAlert(
+                        title: "Import Successful",
+                        message: "Shortcuts have been imported successfully.",
+                        style: .informational
+                    )
+                } catch {
+                    self?.showAlert(
+                        title: "Import Failed",
+                        message: "Failed to import configuration: \(error.localizedDescription)",
+                        style: .critical
+                    )
+                }
+            }
+        }
+    }
+
+    @objc private func exportConfiguration() {
+        let panel = NSSavePanel()
+        panel.title = "Export Shortcuts Configuration"
+        panel.message = "Choose where to save your shortcuts configuration"
+        panel.nameFieldStringValue = "shortcuts-\(Date().ISO8601Format()).json"
+        panel.allowedContentTypes = [.json]
+        panel.canCreateDirectories = true
+
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+
+            do {
+                try self?.shortcutStore.exportAll(to: url)
+                self?.showAlert(
+                    title: "Export Successful",
+                    message: "Shortcuts have been exported to:\n\(url.path)",
+                    style: .informational
+                )
+            } catch {
+                self?.showAlert(
+                    title: "Export Failed",
+                    message: "Failed to export configuration: \(error.localizedDescription)",
+                    style: .critical
+                )
+            }
+        }
+    }
+
+    private func showMergeStrategyDialog(completion: @escaping (ConfigurationManager.MergeStrategy) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = "Import Strategy"
+        alert.informativeText = "How would you like to merge the imported shortcuts?"
+        alert.alertStyle = .informational
+
+        alert.addButton(withTitle: "Replace All")
+        alert.addButton(withTitle: "Merge")
+        alert.addButton(withTitle: "Append")
+        alert.addButton(withTitle: "Cancel")
+
+        // Add detailed descriptions
+        let descriptions = """
+        Replace All: Replace all existing shortcuts with imported ones
+        Merge: Keep existing shortcuts for unlisted apps, replace apps in import
+        Append: Add imported shortcuts to existing ones (may create duplicates)
+        """
+
+        let textView = NSTextView(frame: NSRect(x: 0, y: 0, width: 350, height: 60))
+        textView.string = descriptions
+        textView.isEditable = false
+        textView.font = NSFont.systemFont(ofSize: 11)
+        textView.textColor = .secondaryLabelColor
+        alert.accessoryView = textView
+
+        let response = alert.runModal()
+
+        switch response {
+        case .alertFirstButtonReturn:
+            completion(.replace)
+        case .alertSecondButtonReturn:
+            completion(.merge)
+        case .alertThirdButtonReturn:
+            completion(.append)
+        default:
+            break
+        }
+    }
+
+    private func showAlert(title: String, message: String, style: NSAlert.Style) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.alertStyle = style
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 }

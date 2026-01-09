@@ -194,4 +194,55 @@ class ShortcutStore: ObservableObject {
             )
         }.sorted { $0.name < $1.name }
     }
+
+    // MARK: - Import/Export
+
+    /// Export all shortcuts to a file
+    func exportAll(to url: URL) throws {
+        let configManager = ConfigurationManager()
+        try configManager.exportAll(shortcuts: allShortcuts, to: url)
+    }
+
+    /// Export shortcuts for a specific app
+    func exportApp(bundleIdentifier: String, to url: URL) throws {
+        guard let appShortcuts = allShortcuts[bundleIdentifier] else {
+            throw NSError(domain: "ShortcutStore", code: 404, userInfo: [
+                NSLocalizedDescriptionKey: "No shortcuts found for app"
+            ])
+        }
+
+        let configManager = ConfigurationManager()
+        try configManager.exportApp(appShortcuts, to: url)
+    }
+
+    /// Import shortcuts from a file
+    func importConfiguration(from url: URL, strategy: ConfigurationManager.MergeStrategy) throws {
+        let configManager = ConfigurationManager()
+        let imported = try configManager.importConfiguration(from: url, mergeStrategy: strategy)
+        let merged = configManager.merge(imported: imported, existing: allShortcuts, strategy: strategy)
+
+        allShortcuts = merged
+        save()
+    }
+
+    /// Export to clipboard
+    func exportToClipboard() throws -> String {
+        let configManager = ConfigurationManager()
+        return try configManager.exportToClipboard(shortcuts: allShortcuts)
+    }
+
+    /// Import from clipboard
+    func importFromClipboard(_ jsonString: String, strategy: ConfigurationManager.MergeStrategy) throws {
+        let configManager = ConfigurationManager()
+        let imported = try configManager.importFromClipboard(jsonString)
+        let merged = configManager.merge(imported: imported, existing: allShortcuts, strategy: strategy)
+
+        allShortcuts = merged
+        save()
+    }
+
+    /// Get the storage directory URL
+    var storageDirectory: URL {
+        return storageURL.deletingLastPathComponent()
+    }
 }
