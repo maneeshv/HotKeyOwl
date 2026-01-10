@@ -23,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - App Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("🚀 ShortcutOverlay starting...")
+        print("🚀 \(AppConstants.appName) starting...")
 
         // Setup menu bar
         setupMenuBar()
@@ -38,7 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Listen for overlay notifications
         setupNotifications()
 
-        print("✅ ShortcutOverlay ready!")
+        print("✅ \(AppConstants.appName) ready!")
     }
 
     // MARK: - iCloud Sync Setup
@@ -73,7 +73,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         hotkeyService.stopMonitoring()
         appMonitorService.stopMonitoring()
-        print("👋 ShortcutOverlay terminating")
+        print("👋 \(AppConstants.appName) terminating")
     }
 
     // MARK: - Menu Bar Setup
@@ -184,7 +184,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Quit
         menu.addItem(NSMenuItem(
-            title: "Quit ShortcutOverlay",
+            title: "Quit \(AppConstants.appName)",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         ))

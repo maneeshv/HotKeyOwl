@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		APPCONST001ABCD123456789 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = APPCONST002ABCD123456789 /* AppConstants.swift */; };
+		ASSETS0001ABCD1234567890 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ASSETS0002ABCD1234567890 /* Assets.xcassets */; };
 		0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */; };
 		26FC52A71EB9707F623EFA42 /* iCloudSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E63D33569DC2791E2A156E /* iCloudSyncSettingsView.swift */; };
 		3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */; };
@@ -35,6 +37,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		APPCONST002ABCD123456789 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		ASSETS0002ABCD1234567890 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0504ACBA1B7954A7FB925BCE /* AppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShortcuts.swift; sourceTree = "<group>"; };
 		0C3CE42FA42D756CB6F5EC52 /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
 		0C8FDA40234168207E616273 /* iCloudSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncService.swift; sourceTree = "<group>"; };
@@ -78,6 +82,7 @@
 		6CD8E5BAF661170747D654D1 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				APPCONST002ABCD123456789 /* AppConstants.swift */,
 				2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */,
 				420BEA3BA93FED205AA6A7A8 /* Info.plist */,
 				620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */,
@@ -96,6 +101,7 @@
 		904CF70E1E1D7939C04D43DC /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ASSETS0002ABCD1234567890 /* Assets.xcassets */,
 				B640023BFE1CCD2242677213 /* ShortcutOverlay.entitlements */,
 			);
 			path = Resources;
@@ -190,12 +196,24 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXResourcesBuildPhase section */
+		RESOURCES001ABCD12345678 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ASSETS0001ABCD1234567890 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		C2F221D953C18FAA2D62DFCB /* ShortcutOverlay */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CA6B17FB5757B849CDA48733 /* Build configuration list for PBXNativeTarget "ShortcutOverlay" */;
 			buildPhases = (
 				35760B3B266697246014C77E /* Sources */,
+				RESOURCES001ABCD12345678 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -241,6 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				APPCONST001ABCD123456789 /* AppConstants.swift in Sources */,
 				E2F5DC3B13873AB243A06ED0 /* AppDelegate.swift in Sources */,
 				8321FB44C1BCCD43C69C64EA /* AppHeaderView.swift in Sources */,
 				F9FABE7CADF30C3F39053DB6 /* AppInfo.swift in Sources */,
@@ -287,8 +306,8 @@
 				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.ShortcutOverlay;
-				PRODUCT_NAME = ShortcutOverlay;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.docketai.$(PRODUCT_NAME)";
+				PRODUCT_NAME = HotKeyOwl;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.9;
@@ -368,8 +387,8 @@
 				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.ShortcutOverlay;
-				PRODUCT_NAME = ShortcutOverlay;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.docketai.$(PRODUCT_NAME)";
+				PRODUCT_NAME = HotKeyOwl;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.9;

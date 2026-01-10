@@ -19,7 +19,7 @@ class ShortcutStore: ObservableObject {
     init() {
         // Get Application Support directory
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDirectory = appSupport.appendingPathComponent("ShortcutOverlay", isDirectory: true)
+        let appDirectory = appSupport.appendingPathComponent(AppConstants.appSupportDirectoryName, isDirectory: true)
 
         // Create directory if needed
         try? fileManager.createDirectory(at: appDirectory, withIntermediateDirectories: true)

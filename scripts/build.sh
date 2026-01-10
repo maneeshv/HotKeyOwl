@@ -3,12 +3,15 @@
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Source centralized config
+source "$PROJECT_DIR/scripts/config.sh"
+
 BUILD_DIR="$PROJECT_DIR/build"
-XCODEPROJ="$PROJECT_DIR/ShortcutOverlay.xcodeproj"
-SCHEME="ShortcutOverlay"
+XCODEPROJ="$PROJECT_DIR/$XCODEPROJ_NAME"
 CONFIGURATION="Release"
 
-echo "🔨 Building ShortcutOverlay..."
+echo "🔨 Building $APP_NAME..."
 echo "📁 Project directory: $PROJECT_DIR"
 
 # Clean build directory
@@ -28,7 +31,7 @@ xcodebuild \
     CODE_SIGNING_REQUIRED=NO \
     CODE_SIGNING_ALLOWED=NO
 
-APP_PATH="$BUILD_DIR/Build/Products/$CONFIGURATION/ShortcutOverlay.app"
+APP_PATH="$BUILD_DIR/Build/Products/$CONFIGURATION/$APP_NAME.app"
 
 if [ -d "$APP_PATH" ]; then
     echo ""
@@ -38,7 +41,7 @@ if [ -d "$APP_PATH" ]; then
 
     # Show app info
     echo "📊 App Info:"
-    echo "   Bundle ID: com.docketai.ShortcutOverlay"
+    echo "   Bundle ID: $BUNDLE_ID"
     echo "   Version: $(defaults read "$APP_PATH/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "Unknown")"
     echo ""
 
@@ -47,25 +50,25 @@ if [ -d "$APP_PATH" ]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Kill running instance
-        if pgrep -x "ShortcutOverlay" > /dev/null; then
+        if pgrep -x "$APP_NAME" > /dev/null; then
             echo "🛑 Stopping running instance..."
-            pkill -x "ShortcutOverlay"
+            pkill -x "$APP_NAME"
             sleep 1
         fi
 
         # Reset accessibility permissions (required for ad-hoc signed builds)
         echo "🔐 Resetting accessibility permissions..."
-        tccutil reset Accessibility com.docketai.ShortcutOverlay 2>/dev/null || true
+        tccutil reset Accessibility "$BUNDLE_ID" 2>/dev/null || true
 
         echo "📋 Copying to /Applications..."
-        if [ -d "/Applications/ShortcutOverlay.app" ]; then
+        if [ -d "/Applications/$APP_NAME.app" ]; then
             echo "⚠️  Removing existing app..."
-            rm -rf "/Applications/ShortcutOverlay.app"
+            rm -rf "/Applications/$APP_NAME.app"
         fi
         cp -r "$APP_PATH" /Applications/
-        echo "✅ Copied to /Applications/ShortcutOverlay.app"
+        echo "✅ Copied to /Applications/$APP_NAME.app"
         echo ""
-        echo "💡 Launch ShortcutOverlay and grant Accessibility permission when prompted"
+        echo "💡 Launch $APP_NAME and grant Accessibility permission when prompted"
     fi
 else
     echo ""

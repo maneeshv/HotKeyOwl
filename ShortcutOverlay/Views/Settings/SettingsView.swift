@@ -25,7 +25,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             // Header
             VStack(spacing: 8) {
-                Text("ShortcutOverlay Settings")
+                Text("\(AppConstants.appName) Settings")
                     .font(.title2)
                     .bold()
 

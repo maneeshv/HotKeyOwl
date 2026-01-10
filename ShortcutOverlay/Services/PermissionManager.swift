@@ -40,8 +40,8 @@ class PermissionManager {
         let alert = NSAlert()
         alert.messageText = "Permission Required"
         alert.informativeText = """
-        ShortcutOverlay needs Accessibility permission to monitor keyboard input \
-        for the global hotkey (Cmd+Ctrl+0).
+        \(AppConstants.appName) needs Accessibility permission to monitor keyboard input \
+        for the global hotkey.
 
         Please grant permission in:
         System Settings > Privacy & Security > Accessibility
@@ -63,15 +63,15 @@ class PermissionManager {
         let alert = NSAlert()
         alert.messageText = "Accessibility Permission Not Granted"
         alert.informativeText = """
-        Without Accessibility permission, ShortcutOverlay cannot detect the \
-        global hotkey (Cmd+Ctrl+0).
+        Without Accessibility permission, \(AppConstants.appName) cannot detect the \
+        global hotkey.
 
         You can still use the app to manage shortcuts, but the overlay won't \
         appear automatically.
 
         To enable the hotkey:
         1. Open System Settings > Privacy & Security > Accessibility
-        2. Enable ShortcutOverlay
+        2. Enable \(AppConstants.appName)
         3. Restart the app
         """
         alert.alertStyle = .informational
