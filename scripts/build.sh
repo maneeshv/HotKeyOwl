@@ -2,6 +2,17 @@
 
 set -e
 
+# Parse arguments
+CLEAN_BUILD=false
+for arg in "$@"; do
+    case $arg in
+        --clean)
+            CLEAN_BUILD=true
+            shift
+            ;;
+    esac
+done
+
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Source centralized config
@@ -11,11 +22,15 @@ BUILD_DIR="$PROJECT_DIR/build"
 XCODEPROJ="$PROJECT_DIR/$XCODEPROJ_NAME"
 CONFIGURATION="Release"
 
-echo "🔨 Building $APP_NAME..."
+if [ "$CLEAN_BUILD" = true ]; then
+    echo "🔨 Building $APP_NAME (clean build)..."
+else
+    echo "🔨 Building $APP_NAME (incremental)..."
+fi
 echo "📁 Project directory: $PROJECT_DIR"
 
-# Clean build directory
-if [ -d "$BUILD_DIR" ]; then
+# Clean build directory only if --clean flag is passed
+if [ "$CLEAN_BUILD" = true ] && [ -d "$BUILD_DIR" ]; then
     echo "🧹 Cleaning build directory..."
     rm -rf "$BUILD_DIR"
 fi
