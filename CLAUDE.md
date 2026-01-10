@@ -1,0 +1,67 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build Commands
+
+```bash
+# Debug build and run
+./scripts/run.sh
+
+# Release build (prompts to copy to /Applications)
+./scripts/build.sh
+
+# Build only (no scripts)
+xcodebuild -scheme ShortcutOverlay -configuration Debug build
+
+# Run tests
+xcodebuild test -project ShortcutOverlay.xcodeproj -scheme ShortcutOverlay -destination 'platform=macOS'
+
+# Launch built app from DerivedData
+open ~/Library/Developer/Xcode/DerivedData/ShortcutOverlay-*/Build/Products/Debug/ShortcutOverlay.app
+```
+
+## Architecture Overview
+
+ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the active application via a press-and-hold overlay. It uses SwiftUI + AppKit hybrid with MVVM pattern.
+
+### Core Services (ShortcutOverlay/Services/)
+
+- **HotkeyService**: Global keyboard monitoring via `CGEventTap`. Detects press-and-hold of configurable hotkey, posts `.showOverlay`/`.hideOverlay` notifications
+- **AppMonitorService**: Detects frontmost app using `NSWorkspace` notifications
+- **ShortcutStore**: CRUD operations for shortcuts, persists to `~/Library/Application Support/ShortcutOverlay/shortcuts.json`
+- **PreferencesManager**: Manages `AppPreferences` (global hotkey config), persists to UserDefaults. **Note**: The `save()` method must not directly modify `@Published preferences` to avoid infinite recursion via `didSet`
+- **iCloudSyncService**: Syncs preferences via `NSUbiquitousKeyValueStore` and shortcuts via iCloud Documents. Uses last-write-wins based on `lastModified` timestamps
+- **ConfigurationManager**: Handles import/export of shortcuts as JSON files
+
+### Key Patterns
+
+- **Overlay Window**: `NSPanel` with `.borderless`, `.nonactivatingPanel`, `.floating` level - doesn't steal focus
+- **Press-and-hold**: Timer-based detection (500ms threshold) in HotkeyService
+- **Notification-driven**: Services communicate via `NotificationCenter` (see `Notification+Names.swift`)
+- **Hotkey Recording**: `HotkeyRecorderView` and `ShortcutRecorderField` use local event monitors to capture key combinations
+
+### Data Flow
+
+1. User presses hotkey → `HotkeyService` detects via `CGEventTap` → posts `.showOverlay`
+2. `AppDelegate` receives notification → queries `AppMonitorService` for current app → queries `ShortcutStore` for shortcuts
+3. `OverlayWindow` displays `OverlayView` with shortcuts
+4. User releases hotkey → `HotkeyService` posts `.hideOverlay` → overlay dismissed
+
+### Models
+
+- **AppPreferences**: Global hotkey configuration (keyCode, modifiers, displayString)
+- **AppShortcuts**: Per-app shortcut collection with `lastModified` for sync
+- **ShortcutItem**: Individual shortcut (key, modifiers array, description)
+
+## Requirements
+
+- macOS 13.0+ (Ventura)
+- Accessibility permission required for `CGEventTap` (global hotkey monitoring)
+- iCloud entitlement for sync features
+
+## Data Storage
+
+- Shortcuts: `~/Library/Application Support/ShortcutOverlay/shortcuts.json`
+- Preferences: UserDefaults (`appPreferences` key)
+- iCloud shortcuts: `<iCloud Container>/Documents/shortcuts.json`
