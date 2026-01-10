@@ -27,9 +27,7 @@ xcodebuild \
     -scheme "$SCHEME" \
     -configuration "$CONFIGURATION" \
     -derivedDataPath "$BUILD_DIR" \
-    CODE_SIGN_IDENTITY="-" \
-    CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGNING_ALLOWED=NO
+    CODE_SIGN_IDENTITY="-"
 
 APP_PATH="$BUILD_DIR/Build/Products/$CONFIGURATION/$APP_NAME.app"
 
@@ -56,16 +54,16 @@ if [ -d "$APP_PATH" ]; then
             sleep 1
         fi
 
-        # Reset accessibility permissions (required for ad-hoc signed builds)
-        echo "🔐 Resetting accessibility permissions..."
-        tccutil reset Accessibility "$BUNDLE_ID" 2>/dev/null || true
-
         echo "📋 Copying to /Applications..."
         if [ -d "/Applications/$APP_NAME.app" ]; then
             echo "⚠️  Removing existing app..."
             rm -rf "/Applications/$APP_NAME.app"
         fi
         cp -r "$APP_PATH" /Applications/
+
+        # Remove quarantine attribute to prevent Gatekeeper issues
+        xattr -cr "/Applications/$APP_NAME.app"
+
         echo "✅ Copied to /Applications/$APP_NAME.app"
         echo ""
         echo "💡 Launch $APP_NAME and grant Accessibility permission when prompted"
