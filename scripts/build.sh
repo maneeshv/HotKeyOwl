@@ -46,6 +46,17 @@ if [ -d "$APP_PATH" ]; then
     read -p "Copy to /Applications? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Kill running instance
+        if pgrep -x "ShortcutOverlay" > /dev/null; then
+            echo "🛑 Stopping running instance..."
+            pkill -x "ShortcutOverlay"
+            sleep 1
+        fi
+
+        # Reset accessibility permissions (required for ad-hoc signed builds)
+        echo "🔐 Resetting accessibility permissions..."
+        tccutil reset Accessibility com.docketai.ShortcutOverlay 2>/dev/null || true
+
         echo "📋 Copying to /Applications..."
         if [ -d "/Applications/ShortcutOverlay.app" ]; then
             echo "⚠️  Removing existing app..."
@@ -54,7 +65,7 @@ if [ -d "$APP_PATH" ]; then
         cp -r "$APP_PATH" /Applications/
         echo "✅ Copied to /Applications/ShortcutOverlay.app"
         echo ""
-        echo "💡 You can now launch ShortcutOverlay from Applications"
+        echo "💡 Launch ShortcutOverlay and grant Accessibility permission when prompted"
     fi
 else
     echo ""
