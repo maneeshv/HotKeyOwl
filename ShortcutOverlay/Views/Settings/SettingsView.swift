@@ -3,6 +3,7 @@ import SwiftUI
 /// Main settings view for configuring application preferences
 struct SettingsView: View {
     @ObservedObject var preferencesManager: PreferencesManager
+    @ObservedObject var syncService: iCloudSyncService
     let hotkeyService: HotkeyService
     let onSave: () -> Void
     let onCancel: () -> Void
@@ -11,8 +12,9 @@ struct SettingsView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
 
-    init(preferencesManager: PreferencesManager, hotkeyService: HotkeyService, onSave: @escaping () -> Void, onCancel: @escaping () -> Void) {
+    init(preferencesManager: PreferencesManager, syncService: iCloudSyncService, hotkeyService: HotkeyService, onSave: @escaping () -> Void, onCancel: @escaping () -> Void) {
         self.preferencesManager = preferencesManager
+        self.syncService = syncService
         self.hotkeyService = hotkeyService
         self.onSave = onSave
         self.onCancel = onCancel
@@ -50,18 +52,8 @@ struct SettingsView: View {
 
                     Divider()
 
-                    // Future settings placeholder
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Other Settings")
-                            .font(.headline)
-
-                        Text("More settings coming soon...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        // Future: Launch at login, Show in Dock, etc.
-                    }
-                    .padding()
+                    // iCloud Sync Settings
+                    iCloudSyncSettingsView(syncService: syncService)
                 }
             }
 

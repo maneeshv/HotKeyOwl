@@ -10,4 +10,15 @@ extension Notification.Name {
 
     /// Posted when the event tap needs to be re-enabled
     static let eventTapDisabled = Notification.Name("com.docketai.ShortcutOverlay.eventTapDisabled")
+
+    // MARK: - iCloud Sync Notifications
+
+    /// Posted when the iCloud sync state changes
+    static let iCloudSyncStateDidChange = Notification.Name("com.docketai.ShortcutOverlay.iCloudSyncStateDidChange")
+
+    /// Posted when preferences are updated from iCloud
+    static let preferencesDidChangeRemotely = Notification.Name("com.docketai.ShortcutOverlay.preferencesDidChangeRemotely")
+
+    /// Posted when shortcuts are updated from iCloud
+    static let shortcutsDidChangeRemotely = Notification.Name("com.docketai.ShortcutOverlay.shortcutsDidChangeRemotely")
 }

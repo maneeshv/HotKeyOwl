@@ -17,14 +17,28 @@ class PreferencesManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let preferencesKey = "appPreferences"
 
+    // MARK: - iCloud Sync Integration
+
+    /// Reference to the sync service (set by AppDelegate)
+    weak var syncService: iCloudSyncService?
+
+    /// Flag to prevent triggering sync during remote update
+    private var isApplyingRemote = false
+
     // MARK: - Initialization
 
     init() {
         // Load from UserDefaults or use default
-        if let data = defaults.data(forKey: preferencesKey),
-           let decoded = try? JSONDecoder().decode(AppPreferences.self, from: data) {
-            self.preferences = decoded
-            print("✅ Loaded preferences from UserDefaults")
+        if let data = defaults.data(forKey: preferencesKey) {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            if let decoded = try? decoder.decode(AppPreferences.self, from: data) {
+                self.preferences = decoded
+                print("✅ Loaded preferences from UserDefaults")
+            } else {
+                self.preferences = .default
+                print("ℹ️ Using default preferences (decode failed)")
+            }
         } else {
             self.preferences = .default
             print("ℹ️ Using default preferences")
@@ -35,12 +49,32 @@ class PreferencesManager: ObservableObject {
 
     /// Save current preferences to UserDefaults
     func save() {
-        if let encoded = try? JSONEncoder().encode(preferences) {
+        // Update lastModified timestamp
+        if !isApplyingRemote {
+            preferences.lastModified = Date()
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        if let encoded = try? encoder.encode(preferences) {
             defaults.set(encoded, forKey: preferencesKey)
             print("✅ Saved preferences to UserDefaults")
+
+            // Trigger iCloud sync if not applying remote changes
+            if !isApplyingRemote {
+                syncService?.syncPreferencesToCloud()
+            }
         } else {
             print("❌ Failed to encode preferences")
         }
+    }
+
+    /// Apply preferences received from iCloud
+    func applyRemotePreferences(_ remotePreferences: AppPreferences) {
+        isApplyingRemote = true
+        preferences = remotePreferences
+        isApplyingRemote = false
+        print("☁️ Applied remote preferences")
     }
 
     /// Reset preferences to default values

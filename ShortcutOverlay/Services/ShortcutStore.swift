@@ -8,6 +8,14 @@ class ShortcutStore: ObservableObject {
     private let fileManager = FileManager.default
     private let storageURL: URL
 
+    // MARK: - iCloud Sync Integration
+
+    /// Reference to the sync service (set by AppDelegate)
+    weak var syncService: iCloudSyncService?
+
+    /// Flag to prevent triggering sync during remote update
+    private var isApplyingRemote = false
+
     init() {
         // Get Application Support directory
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -49,9 +57,36 @@ class ShortcutStore: ObservableObject {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(allShortcuts)
             try data.write(to: storageURL, options: .atomic)
+
+            // Trigger iCloud sync if not applying remote changes
+            if !isApplyingRemote {
+                syncService?.syncShortcutsToCloud()
+            }
         } catch {
             print("Failed to save shortcuts: \(error)")
         }
+    }
+
+    // MARK: - iCloud Sync Methods
+
+    /// Get all shortcuts for sync
+    func getAllShortcuts() -> [String: AppShortcuts] {
+        return allShortcuts
+    }
+
+    /// Replace all shortcuts (used when applying remote data)
+    func replaceAllShortcuts(_ shortcuts: [String: AppShortcuts]) {
+        isApplyingRemote = true
+        allShortcuts = shortcuts
+        save()
+        isApplyingRemote = false
+        objectWillChange.send()
+        print("☁️ Replaced all shortcuts from iCloud")
+    }
+
+    /// Reload shortcuts from cloud
+    func reloadFromCloud() {
+        syncService?.pullShortcutsFromCloud()
     }
 
     // MARK: - CRUD Operations

@@ -4,6 +4,7 @@ import Carbon
 /// Application preferences model
 struct AppPreferences: Codable {
     var globalHotkey: HotkeyConfiguration
+    var lastModified: Date
 
     /// Hotkey configuration for the global overlay trigger
     struct HotkeyConfiguration: Codable {
@@ -29,12 +30,19 @@ struct AppPreferences: Codable {
         }
     }
 
+    /// Initialize with hotkey and current timestamp
+    init(globalHotkey: HotkeyConfiguration, lastModified: Date = Date()) {
+        self.globalHotkey = globalHotkey
+        self.lastModified = lastModified
+    }
+
     /// Default preferences with Ctrl+Option+Cmd+0
     static let `default` = AppPreferences(
         globalHotkey: HotkeyConfiguration(
             keyCode: 29,  // "0" key
             modifiers: [.maskControl, .maskAlternate, .maskCommand],
             displayString: "⌃⌥⌘0"
-        )
+        ),
+        lastModified: Date()
     )
 }

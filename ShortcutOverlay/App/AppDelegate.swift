@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var hotkeyService = HotkeyService(preferencesManager: preferencesManager)
     private let appMonitorService = AppMonitorService()
     private let shortcutStore = ShortcutStore()
+    private let syncService = iCloudSyncService()
 
     // Window references
     private var editorWindow: NSWindow?
@@ -27,6 +28,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Setup menu bar
         setupMenuBar()
 
+        // Setup iCloud sync
+        setupiCloudSync()
+
         // Start services
         appMonitorService.startMonitoring()
         hotkeyService.startMonitoring()
@@ -35,6 +39,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupNotifications()
 
         print("✅ ShortcutOverlay ready!")
+    }
+
+    // MARK: - iCloud Sync Setup
+
+    private func setupiCloudSync() {
+        // Wire up services
+        preferencesManager.syncService = syncService
+        shortcutStore.syncService = syncService
+
+        // Configure sync service
+        syncService.preferencesManager = preferencesManager
+        syncService.shortcutStore = shortcutStore
+
+        // Listen for remote preference changes to update hotkey
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemotePreferencesChange),
+            name: .preferencesDidChangeRemotely,
+            object: nil
+        )
+
+        print("☁️ iCloud sync setup complete")
+    }
+
+    @objc private func handleRemotePreferencesChange() {
+        // Update hotkey service when preferences change from iCloud
+        hotkeyService.updateHotkey(preferencesManager.globalHotkey)
+        updateMenu()
+        print("☁️ Applied remote hotkey configuration")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -296,6 +329,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Create settings view
         let settingsView = SettingsView(
             preferencesManager: preferencesManager,
+            syncService: syncService,
             hotkeyService: hotkeyService,
             onSave: { [weak self] in
                 self?.settingsWindow?.close()
