@@ -49,14 +49,17 @@ class PreferencesManager: ObservableObject {
 
     /// Save current preferences to UserDefaults
     func save() {
-        // Update lastModified timestamp
+        // Create a copy for saving to avoid triggering didSet recursion
+        var preferencesToSave = preferences
+
+        // Update lastModified timestamp on the copy
         if !isApplyingRemote {
-            preferences.lastModified = Date()
+            preferencesToSave.lastModified = Date()
         }
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        if let encoded = try? encoder.encode(preferences) {
+        if let encoded = try? encoder.encode(preferencesToSave) {
             defaults.set(encoded, forKey: preferencesKey)
             print("✅ Saved preferences to UserDefaults")
 
@@ -95,13 +98,9 @@ class PreferencesManager: ObservableObject {
 
     /// Validate hotkey configuration
     func validate(keyCode: CGKeyCode, modifiers: CGEventFlags) -> Bool {
-        // Must have at least one modifier or be a function key (F1-F12)
-        let hasModifiers = modifiers.contains(.maskCommand) ||
-                          modifiers.contains(.maskControl) ||
-                          modifiers.contains(.maskAlternate) ||
-                          modifiers.contains(.maskShift)
-
-        let isFunctionKey = (keyCode >= 122 && keyCode <= 133)  // F1-F12 keys
+        let modifierMasks: [CGEventFlags] = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
+        let hasModifiers = modifierMasks.contains { modifiers.contains($0) }
+        let isFunctionKey = (122...133).contains(keyCode)  // F1-F12 keys
 
         return hasModifiers || isFunctionKey
     }

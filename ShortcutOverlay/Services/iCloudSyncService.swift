@@ -8,20 +8,6 @@ enum iCloudSyncState: Equatable {
     case syncing
     case synced
     case error(String)
-
-    static func == (lhs: iCloudSyncState, rhs: iCloudSyncState) -> Bool {
-        switch (lhs, rhs) {
-        case (.disabled, .disabled),
-             (.unavailable, .unavailable),
-             (.syncing, .syncing),
-             (.synced, .synced):
-            return true
-        case (.error(let lhsMsg), .error(let rhsMsg)):
-            return lhsMsg == rhsMsg
-        default:
-            return false
-        }
-    }
 }
 
 /// Service for managing iCloud synchronization of preferences and shortcuts
@@ -368,20 +354,18 @@ class iCloudSyncService: ObservableObject {
         guard syncEnabled else { return }
 
         guard let userInfo = notification.userInfo,
-              let reasonValue = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
+              let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
             return
         }
 
-        let reason = NSUbiquitousKeyValueStoreChangeReason(rawValue: reasonValue)
-
         switch reason {
-        case .serverChange, .initialSyncChange:
+        case NSUbiquitousKeyValueStoreServerChange, NSUbiquitousKeyValueStoreInitialSyncChange:
             print("☁️ Key-value store changed externally")
             pullPreferencesFromCloud()
-        case .quotaViolationChange:
+        case NSUbiquitousKeyValueStoreQuotaViolationChange:
             print("☁️ iCloud quota exceeded")
             syncState = .error("iCloud quota exceeded")
-        case .accountChange:
+        case NSUbiquitousKeyValueStoreAccountChange:
             print("☁️ iCloud account changed")
             checkiCloudAvailability()
         default:
@@ -429,25 +413,4 @@ class iCloudSyncService: ObservableObject {
         lastSyncDate = Date()
         UserDefaults.standard.set(lastSyncDate, forKey: Self.lastSyncDateKey)
     }
-}
-
-// MARK: - NSUbiquitousKeyValueStoreChangeReason Extension
-
-extension NSUbiquitousKeyValueStoreChangeReason {
-    init?(rawValue: Int) {
-        switch rawValue {
-        case 0: self = .serverChange
-        case 1: self = .initialSyncChange
-        case 2: self = .quotaViolationChange
-        case 3: self = .accountChange
-        default: return nil
-        }
-    }
-}
-
-enum NSUbiquitousKeyValueStoreChangeReason {
-    case serverChange
-    case initialSyncChange
-    case quotaViolationChange
-    case accountChange
 }

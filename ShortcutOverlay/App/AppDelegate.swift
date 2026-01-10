@@ -269,71 +269,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func openEditor(for bundleIdentifier: String? = nil) {
-        // If editor window already exists, bring it to front
-        if let existingWindow = editorWindow {
-            existingWindow.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
+        if bringWindowToFront(editorWindow) { return }
 
-        // Create editor view
         let editorView = EditorView(
             shortcutStore: shortcutStore,
             appMonitorService: appMonitorService,
             selectedBundleId: bundleIdentifier
         )
 
-        // Create window
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
+        let window = createWindow(
+            title: "Edit Shortcuts",
+            contentView: editorView,
+            size: NSSize(width: 700, height: 500),
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
-            backing: .buffered,
-            defer: false
+            minSize: NSSize(width: 600, height: 400),
+            autosaveName: "EditorWindow"
         )
 
-        window.title = "Edit Shortcuts"
-        window.contentView = NSHostingView(rootView: editorView)
-        window.center()
-        window.setFrameAutosaveName("EditorWindow")
-        window.minSize = NSSize(width: 600, height: 400)
-        window.isReleasedWhenClosed = false
-
-        // Store reference
         editorWindow = window
-
-        // Handle window close
-        var closeObserver: NSObjectProtocol?
-        closeObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.willCloseNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            self?.editorWindow = nil
-            if let observer = closeObserver {
-                NotificationCenter.default.removeObserver(observer)
-            }
-        }
-
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        observeWindowClose(window) { [weak self] in self?.editorWindow = nil }
+        showWindow(window)
     }
 
     @objc private func openSettings() {
-        // If settings window already exists, bring it to front
-        if let existingWindow = settingsWindow {
-            existingWindow.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
+        if bringWindowToFront(settingsWindow) { return }
 
-        // Create settings view
         let settingsView = SettingsView(
             preferencesManager: preferencesManager,
             syncService: syncService,
             hotkeyService: hotkeyService,
             onSave: { [weak self] in
                 self?.settingsWindow?.close()
-                // Update menu bar to reflect new hotkey
                 self?.updateMenu()
             },
             onCancel: { [weak self] in
@@ -341,35 +307,71 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         )
 
-        // Create window
+        let window = createWindow(
+            title: "Settings",
+            contentView: settingsView,
+            size: NSSize(width: 500, height: 400),
+            styleMask: [.titled, .closable]
+        )
+
+        settingsWindow = window
+        observeWindowClose(window) { [weak self] in self?.settingsWindow = nil }
+        showWindow(window)
+    }
+
+    // MARK: - Window Helpers
+
+    private func bringWindowToFront(_ window: NSWindow?) -> Bool {
+        guard let window = window else { return false }
+        showWindow(window)
+        return true
+    }
+
+    private func createWindow<Content: View>(
+        title: String,
+        contentView: Content,
+        size: NSSize,
+        styleMask: NSWindow.StyleMask,
+        minSize: NSSize? = nil,
+        autosaveName: String? = nil
+    ) -> NSWindow {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
-            styleMask: [.titled, .closable],
+            contentRect: NSRect(origin: .zero, size: size),
+            styleMask: styleMask,
             backing: .buffered,
             defer: false
         )
 
-        window.title = "Settings"
-        window.contentView = NSHostingView(rootView: settingsView)
+        window.title = title
+        window.contentView = NSHostingView(rootView: contentView)
         window.center()
         window.isReleasedWhenClosed = false
 
-        // Store reference
-        settingsWindow = window
+        if let minSize = minSize {
+            window.minSize = minSize
+        }
+        if let autosaveName = autosaveName {
+            window.setFrameAutosaveName(autosaveName)
+        }
 
-        // Handle window close
-        var closeObserver: NSObjectProtocol?
-        closeObserver = NotificationCenter.default.addObserver(
+        return window
+    }
+
+    private func observeWindowClose(_ window: NSWindow, onClose: @escaping () -> Void) {
+        var observer: NSObjectProtocol?
+        observer = NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification,
             object: window,
             queue: .main
-        ) { [weak self] _ in
-            self?.settingsWindow = nil
-            if let observer = closeObserver {
+        ) { _ in
+            onClose()
+            if let observer = observer {
                 NotificationCenter.default.removeObserver(observer)
             }
         }
+    }
 
+    private func showWindow(_ window: NSWindow) {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

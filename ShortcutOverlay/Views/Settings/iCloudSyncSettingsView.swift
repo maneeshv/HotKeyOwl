@@ -40,7 +40,7 @@ struct iCloudSyncSettingsView: View {
 
                     // Last sync date
                     if let lastSync = syncService.lastSyncDate {
-                        Text("Last sync: \(lastSync, formatter: dateFormatter)")
+                        Text("Last sync: \(lastSync, formatter: Self.dateFormatter)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -114,12 +114,12 @@ struct iCloudSyncSettingsView: View {
 
     // MARK: - Date Formatter
 
-    private var dateFormatter: DateFormatter {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .short
         return formatter
-    }
+    }()
 }
 
 // MARK: - Preview

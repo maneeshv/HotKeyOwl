@@ -41,7 +41,6 @@ struct SettingsView: View {
             // Content
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Hotkey Configuration
                     HotkeyRecorderView(
                         config: $workingConfig,
                         onValidationError: { message in
@@ -52,9 +51,9 @@ struct SettingsView: View {
 
                     Divider()
 
-                    // iCloud Sync Settings
                     iCloudSyncSettingsView(syncService: syncService)
                 }
+                .padding()
             }
 
             Divider()

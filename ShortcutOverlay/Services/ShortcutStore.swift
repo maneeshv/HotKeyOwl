@@ -221,13 +221,9 @@ class ShortcutStore: ObservableObject {
     // MARK: - Utility
 
     var configuredApps: [AppInfo] {
-        allShortcuts.values.map { appShortcuts in
-            AppInfo(
-                bundleIdentifier: appShortcuts.bundleIdentifier,
-                name: appShortcuts.appName,
-                icon: AppInfo.icon(for: appShortcuts.bundleIdentifier)
-            )
-        }.sorted { $0.name < $1.name }
+        allShortcuts.values
+            .map { AppInfo(bundleIdentifier: $0.bundleIdentifier, name: $0.appName, icon: AppInfo.icon(for: $0.bundleIdentifier)) }
+            .sorted { $0.name < $1.name }
     }
 
     // MARK: - Import/Export
