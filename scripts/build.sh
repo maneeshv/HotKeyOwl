@@ -2,17 +2,6 @@
 
 set -e
 
-# Parse arguments
-CLEAN_BUILD=false
-for arg in "$@"; do
-    case $arg in
-        --clean)
-            CLEAN_BUILD=true
-            shift
-            ;;
-    esac
-done
-
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Source centralized config
@@ -22,20 +11,16 @@ BUILD_DIR="$PROJECT_DIR/build"
 XCODEPROJ="$PROJECT_DIR/$XCODEPROJ_NAME"
 CONFIGURATION="Release"
 
-if [ "$CLEAN_BUILD" = true ]; then
-    echo "🔨 Building $APP_NAME (clean build)..."
-else
-    echo "🔨 Building $APP_NAME (incremental)..."
-fi
+echo "🔨 Building $APP_NAME (Release)..."
 echo "📁 Project directory: $PROJECT_DIR"
 
-# Clean build directory only if --clean flag is passed
-if [ "$CLEAN_BUILD" = true ] && [ -d "$BUILD_DIR" ]; then
+# Clean build directory for reproducible Release builds
+if [ -d "$BUILD_DIR" ]; then
     echo "🧹 Cleaning build directory..."
     rm -rf "$BUILD_DIR"
 fi
 
-# Build the project
+# Build the project (signing happens post-build for TCC compatibility)
 echo "⚙️  Building Release configuration..."
 xcodebuild \
     -project "$XCODEPROJ" \
@@ -49,6 +34,11 @@ APP_PATH="$BUILD_DIR/Build/Products/$CONFIGURATION/$APP_NAME.app"
 if [ -d "$APP_PATH" ]; then
     echo ""
     echo "✅ Build successful!"
+
+    # Sign the app for TCC permission persistence
+    echo "🔏 Signing application for TCC compatibility..."
+    codesign --force --deep --sign - "$APP_PATH"
+
     echo "📦 Application: $APP_PATH"
     echo ""
 
@@ -78,6 +68,10 @@ if [ -d "$APP_PATH" ]; then
 
         # Remove quarantine attribute to prevent Gatekeeper issues
         xattr -cr "/Applications/$APP_NAME.app"
+
+        # Re-sign after copy to ensure TCC can verify the app
+        echo "🔏 Signing application..."
+        codesign --force --deep --sign - "/Applications/$APP_NAME.app"
 
         echo "✅ Copied to /Applications/$APP_NAME.app"
         echo ""
