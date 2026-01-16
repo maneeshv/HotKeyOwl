@@ -43,7 +43,7 @@ class OverlayWindow: NSPanel {
 
         if animated {
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.2
+                context.duration = 0.1  // Fast fade-in for instant feel
                 context.timingFunction = CAMediaTimingFunction(name: .easeOut)
                 self.animator().alphaValue = 1.0
             }
@@ -56,7 +56,7 @@ class OverlayWindow: NSPanel {
     func hide(animated: Bool = true) {
         if animated {
             NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.15
+                context.duration = 0.1  // Fast fade-out for snappy feel
                 context.timingFunction = CAMediaTimingFunction(name: .easeIn)
                 self.animator().alphaValue = 0.0
             }, completionHandler: {

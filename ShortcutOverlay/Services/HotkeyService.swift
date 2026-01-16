@@ -11,10 +11,7 @@ class HotkeyService: ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    // Press-and-hold state
-    private var keyDownTime: Date?
-    private var holdTimer: Timer?
-    private let holdThreshold: TimeInterval = 0.5  // 500ms
+    // Press state
     private var isCurrentlyPressed = false
     private var overlayShown = false
 
@@ -93,9 +90,6 @@ class HotkeyService: ObservableObject {
             self.eventTap = nil
         }
 
-        holdTimer?.invalidate()
-        holdTimer = nil
-
         print("🛑 Hotkey monitoring stopped")
     }
 
@@ -137,13 +131,9 @@ class HotkeyService: ObservableObject {
         guard !isCurrentlyPressed else { return }
 
         isCurrentlyPressed = true
-        keyDownTime = Date()
 
-        // Start hold timer
-        holdTimer?.invalidate()
-        holdTimer = Timer.scheduledTimer(withTimeInterval: holdThreshold, repeats: false) { [weak self] _ in
-            self?.triggerOverlay()
-        }
+        // Trigger overlay immediately on press (no hold delay)
+        triggerOverlay()
     }
 
     private func handleKeyUp(_ event: CGEvent) {
@@ -155,11 +145,6 @@ class HotkeyService: ObservableObject {
 
         // Key released
         isCurrentlyPressed = false
-        keyDownTime = nil
-
-        // Cancel hold timer
-        holdTimer?.invalidate()
-        holdTimer = nil
 
         // Hide overlay if it was shown
         if overlayShown {
