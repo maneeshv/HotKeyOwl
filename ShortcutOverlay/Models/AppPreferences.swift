@@ -1,9 +1,16 @@
 import Foundation
 import Carbon
 
+/// Hotkey activation mode
+enum HotkeyMode: String, Codable, CaseIterable {
+    case hold = "hold"      // Show while holding, hide on release
+    case toggle = "toggle"  // Press to show, press again or Esc to hide
+}
+
 /// Application preferences model
 struct AppPreferences: Codable {
     var globalHotkey: HotkeyConfiguration
+    var hotkeyMode: HotkeyMode
     var lastModified: Date
 
     /// Hotkey configuration for the global overlay trigger
@@ -30,9 +37,10 @@ struct AppPreferences: Codable {
         }
     }
 
-    /// Initialize with hotkey and current timestamp
-    init(globalHotkey: HotkeyConfiguration, lastModified: Date = Date()) {
+    /// Initialize with hotkey, mode, and current timestamp
+    init(globalHotkey: HotkeyConfiguration, hotkeyMode: HotkeyMode = .hold, lastModified: Date = Date()) {
         self.globalHotkey = globalHotkey
+        self.hotkeyMode = hotkeyMode
         self.lastModified = lastModified
     }
 

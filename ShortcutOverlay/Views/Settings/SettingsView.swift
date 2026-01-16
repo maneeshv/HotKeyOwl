@@ -9,6 +9,7 @@ struct SettingsView: View {
     let onCancel: () -> Void
 
     @State private var workingConfig: AppPreferences.HotkeyConfiguration
+    @State private var workingHotkeyMode: HotkeyMode
     @State private var showAlert = false
     @State private var alertMessage = ""
 
@@ -19,6 +20,7 @@ struct SettingsView: View {
         self.onSave = onSave
         self.onCancel = onCancel
         self._workingConfig = State(initialValue: preferencesManager.globalHotkey)
+        self._workingHotkeyMode = State(initialValue: preferencesManager.hotkeyMode)
     }
 
     var body: some View {
@@ -48,6 +50,23 @@ struct SettingsView: View {
                             showAlert = true
                         }
                     )
+
+                    // Hotkey Mode Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Activation Mode")
+                            .font(.headline)
+
+                        Picker("", selection: $workingHotkeyMode) {
+                            Text("Hold to show").tag(HotkeyMode.hold)
+                            Text("Press to toggle").tag(HotkeyMode.toggle)
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+
+                        Text(modeDescription)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
 
                     Divider()
 
@@ -83,12 +102,23 @@ struct SettingsView: View {
         }
     }
 
+    private var modeDescription: String {
+        switch workingHotkeyMode {
+        case .hold:
+            return "Press and hold the hotkey to show the overlay. Release to hide."
+        case .toggle:
+            return "Press the hotkey to show the overlay. Press again or Esc to hide."
+        }
+    }
+
     private func saveSettings() {
         // Update preferences
         preferencesManager.updateGlobalHotkey(workingConfig)
+        preferencesManager.updateHotkeyMode(workingHotkeyMode)
 
         // Update hotkey service
         hotkeyService.updateHotkey(workingConfig)
+        hotkeyService.updateHotkeyMode(workingHotkeyMode)
 
         // Call save callback
         onSave()

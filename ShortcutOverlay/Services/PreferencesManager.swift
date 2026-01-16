@@ -96,6 +96,16 @@ class PreferencesManager: ObservableObject {
         return preferences.globalHotkey
     }
 
+    /// Get the current hotkey mode
+    var hotkeyMode: HotkeyMode {
+        return preferences.hotkeyMode
+    }
+
+    /// Update the hotkey mode
+    func updateHotkeyMode(_ mode: HotkeyMode) {
+        preferences.hotkeyMode = mode
+    }
+
     /// Validate hotkey configuration
     func validate(keyCode: CGKeyCode, modifiers: CGEventFlags) -> Bool {
         let modifierMasks: [CGEventFlags] = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
