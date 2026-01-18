@@ -461,7 +461,7 @@ struct ShortcutFormSheet: View {
             .padding(.horizontal)
         }
         .padding()
-        .frame(width: 500, height: 480)
+        .frame(width: 500, height: 550)
     }
 
     // MARK: - Computed Properties
