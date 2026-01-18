@@ -36,7 +36,7 @@ struct OverlayView: View {
                 shortcutsList
             }
         }
-        .frame(width: 800)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.black.opacity(0.8))
@@ -73,7 +73,7 @@ struct OverlayView: View {
                 .padding(16)
             }
         }
-        .frame(maxHeight: 500)
+        .frame(maxHeight: .infinity)
     }
 
     private func categorySectionView(category: String, shortcuts: [ShortcutItem]) -> some View {

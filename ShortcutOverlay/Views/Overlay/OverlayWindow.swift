@@ -7,11 +7,17 @@ class OverlayWindow: NSPanel {
     // MARK: - Initialization
 
     init<Content: View>(contentView: Content) {
+        // Calculate 80% of screen size
+        let screen = NSScreen.main ?? NSScreen.screens.first!
+        let screenFrame = screen.visibleFrame
+        let windowWidth = screenFrame.width * 0.8
+        let windowHeight = screenFrame.height * 0.8
+
         // Create hosting controller for SwiftUI content
         let hostingView = NSHostingView(rootView: contentView)
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 800, height: 450),
+            contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
