@@ -261,12 +261,21 @@ struct ShortcutListRow: View {
 // MARK: - Shortcut Form Sheet
 
 struct ShortcutFormSheet: View {
+    /// Input mode for shortcut entry
+    enum InputMode: String, CaseIterable {
+        case autoCapture = "Auto-capture"
+        case manualEntry = "Manual Entry"
+    }
+
     let appInfo: AppInfo
     let shortcut: ShortcutItem?
     let onSave: (ShortcutItem) -> Void
     let onCancel: () -> Void
 
+    @State private var inputMode: InputMode = .autoCapture
     @State private var capturedShortcut: CapturedShortcut?
+    @State private var manualInput: String = ""
+    @State private var parseError: String?
     @State private var description: String = ""
 
     init(appInfo: AppInfo, shortcut: ShortcutItem?, onSave: @escaping (ShortcutItem) -> Void, onCancel: @escaping () -> Void) {
@@ -278,13 +287,24 @@ struct ShortcutFormSheet: View {
         // Initialize with existing values if editing
         if let shortcut = shortcut {
             _description = State(initialValue: shortcut.description)
-            // Create a CapturedShortcut from existing data
-            _capturedShortcut = State(initialValue: CapturedShortcut(
-                key: shortcut.key,
-                modifiers: shortcut.modifiers,
-                keyCode: 0,  // We don't store keyCode in ShortcutItem
-                modifierFlags: CGEventFlags(rawValue: 0)  // We don't store flags in ShortcutItem
-            ))
+
+            // Check if this looks like a manual entry (contains comma or has no modifiers with multi-char key)
+            let isManualEntry = shortcut.key.contains(",") ||
+                                shortcut.key.lowercased().contains(" then ") ||
+                                (shortcut.modifiers.isEmpty && shortcut.key.count > 1)
+
+            if isManualEntry {
+                _inputMode = State(initialValue: .manualEntry)
+                _manualInput = State(initialValue: shortcut.formattedShortcut)
+            } else {
+                // Create a CapturedShortcut from existing data
+                _capturedShortcut = State(initialValue: CapturedShortcut(
+                    key: shortcut.key,
+                    modifiers: shortcut.modifiers,
+                    keyCode: 0,  // We don't store keyCode in ShortcutItem
+                    modifierFlags: CGEventFlags(rawValue: 0)  // We don't store flags in ShortcutItem
+                ))
+            }
         }
     }
 
@@ -298,11 +318,54 @@ struct ShortcutFormSheet: View {
                 .foregroundColor(.secondary)
 
             VStack(alignment: .leading, spacing: 16) {
+                // Input mode picker
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Input Mode")
+                        .font(.headline)
+
+                    Picker("", selection: $inputMode) {
+                        Text("Auto-capture").tag(InputMode.autoCapture)
+                        Text("Manual Entry").tag(InputMode.manualEntry)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .onChange(of: inputMode) { _ in
+                        // Clear parse error when switching modes
+                        parseError = nil
+                    }
+
+                    Text(inputModeDescription)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
                 // Shortcut section
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Shortcut")
                         .font(.headline)
-                    ShortcutRecorderField(capturedShortcut: $capturedShortcut)
+
+                    if inputMode == .autoCapture {
+                        ShortcutRecorderField(capturedShortcut: $capturedShortcut)
+                    } else {
+                        // Manual entry TextField
+                        TextField("e.g., ⌘⇧N or Ctrl+B, C", text: $manualInput)
+                            .textFieldStyle(.roundedBorder)
+                            .onChange(of: manualInput) { newValue in
+                                validateManualInput(newValue)
+                            }
+
+                        if let error = parseError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else if !manualInput.isEmpty {
+                            manualInputPreview
+                        } else {
+                            Text("Supports: ⌘⇧N, Cmd+Shift+N, Ctrl+B, C (prefix sequences)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
 
                 // Description section
@@ -332,7 +395,7 @@ struct ShortcutFormSheet: View {
                     saveShortcut()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(capturedShortcut == nil || description.isEmpty)
+                .disabled(!canSave)
             }
             .padding(.horizontal)
         }
@@ -340,15 +403,119 @@ struct ShortcutFormSheet: View {
         .frame(width: 500, height: 380)
     }
 
-    private func saveShortcut() {
-        guard let captured = capturedShortcut else { return }
+    // MARK: - Computed Properties
 
-        let newShortcut = ShortcutItem(
-            id: shortcut?.id ?? UUID(),
-            key: captured.key,
-            modifiers: captured.modifiers,
-            description: description
-        )
+    private var inputModeDescription: String {
+        switch inputMode {
+        case .autoCapture:
+            return "Press keys to capture automatically"
+        case .manualEntry:
+            return "Type shortcuts manually (for complex sequences like tmux)"
+        }
+    }
+
+    private var canSave: Bool {
+        if inputMode == .autoCapture {
+            return capturedShortcut != nil && !description.isEmpty
+        } else {
+            return !manualInput.isEmpty && parseError == nil && !description.isEmpty
+        }
+    }
+
+    @ViewBuilder
+    private var manualInputPreview: some View {
+        let result = ShortcutParser.parse(manualInput)
+        switch result {
+        case .standard(let key, let modifiers):
+            HStack(spacing: 4) {
+                Text("Preview:")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                ForEach(modifiers, id: \.self) { modifier in
+                    Text(modifier)
+                        .font(.system(size: 11, design: .monospaced))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(Color.green.opacity(0.2))
+                        .cornerRadius(3)
+                }
+
+                Text(key)
+                    .font(.system(size: 11, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(3)
+            }
+        case .sequence(let displayText):
+            HStack(spacing: 4) {
+                Text("Sequence:")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text(displayText)
+                    .font(.system(size: 11, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(Color.blue.opacity(0.2))
+                    .cornerRadius(3)
+            }
+        case .invalid:
+            EmptyView()
+        }
+    }
+
+    // MARK: - Methods
+
+    private func validateManualInput(_ input: String) {
+        if input.isEmpty {
+            parseError = nil
+            return
+        }
+
+        let result = ShortcutParser.parse(input)
+        switch result {
+        case .standard, .sequence:
+            parseError = nil
+        case .invalid(let error):
+            parseError = error
+        }
+    }
+
+    private func saveShortcut() {
+        let newShortcut: ShortcutItem
+
+        if inputMode == .autoCapture {
+            guard let captured = capturedShortcut else { return }
+            newShortcut = ShortcutItem(
+                id: shortcut?.id ?? UUID(),
+                key: captured.key,
+                modifiers: captured.modifiers,
+                description: description
+            )
+        } else {
+            let result = ShortcutParser.parse(manualInput)
+            switch result {
+            case .standard(let key, let modifiers):
+                newShortcut = ShortcutItem(
+                    id: shortcut?.id ?? UUID(),
+                    key: key,
+                    modifiers: modifiers,
+                    description: description
+                )
+            case .sequence(let displayText):
+                // Store full sequence in key field, empty modifiers
+                newShortcut = ShortcutItem(
+                    id: shortcut?.id ?? UUID(),
+                    key: displayText,
+                    modifiers: [],
+                    description: description
+                )
+            case .invalid:
+                return
+            }
+        }
 
         onSave(newShortcut)
     }
