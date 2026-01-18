@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build Commands
 
 ```bash
-# Debug build and run
-./scripts/run.sh
+# Debug build
+./scripts/build-debug.sh
 
 # Release build (prompts to copy to /Applications)
 ./scripts/build.sh
