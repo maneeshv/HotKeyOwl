@@ -11,7 +11,7 @@ class OverlayWindow: NSPanel {
         let hostingView = NSHostingView(rootView: contentView)
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 450),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false

@@ -21,7 +21,7 @@ struct OverlayView: View {
                 shortcutsList
             }
         }
-        .frame(width: 400)
+        .frame(width: 800)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.black.opacity(0.8))
@@ -44,7 +44,7 @@ struct OverlayView: View {
             }
             .padding(16)
         }
-        .frame(maxHeight: 450)
+        .frame(maxHeight: 380)
     }
 
     private var emptyState: some View {
