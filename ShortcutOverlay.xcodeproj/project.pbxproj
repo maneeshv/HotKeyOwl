@@ -38,6 +38,7 @@
 		SETTINGSSIDEBAR01BLD /* SettingsSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = SETTINGSSIDEBAR02REF /* SettingsSidebar.swift */; };
 		GENERALSETTINGS01BLD /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GENERALSETTINGS02REF /* GeneralSettingsView.swift */; };
 		ICLOUDSETTINGS01BLD /* iCloudSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ICLOUDSETTINGS02REF /* iCloudSettingsView.swift */; };
+		LAUNCHATLOGIN01BLD /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = LAUNCHATLOGIN02REF /* LaunchAtLoginService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		SETTINGSSIDEBAR02REF /* SettingsSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSidebar.swift; sourceTree = "<group>"; };
 		GENERALSETTINGS02REF /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		ICLOUDSETTINGS02REF /* iCloudSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSettingsView.swift; sourceTree = "<group>"; };
+		LAUNCHATLOGIN02REF /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -152,6 +154,7 @@
 				84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */,
 				E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */,
 				0C8FDA40234168207E616273 /* iCloudSyncService.swift */,
+				LAUNCHATLOGIN02REF /* LaunchAtLoginService.swift */,
 				9D7E03823B24CB153DC779B5 /* PermissionManager.swift */,
 				8028EBB14F56745C031F2DA3 /* PreferencesManager.swift */,
 				C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */,
@@ -309,6 +312,7 @@
 				SETTINGSSIDEBAR01BLD /* SettingsSidebar.swift in Sources */,
 				GENERALSETTINGS01BLD /* GeneralSettingsView.swift in Sources */,
 				ICLOUDSETTINGS01BLD /* iCloudSettingsView.swift in Sources */,
+				LAUNCHATLOGIN01BLD /* LaunchAtLoginService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

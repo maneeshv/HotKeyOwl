@@ -6,6 +6,8 @@ struct GeneralSettingsView: View {
     @Binding var workingHotkeyMode: HotkeyMode
     var onValidationError: (String) -> Void
 
+    @State private var launchAtLogin = LaunchAtLoginService.shared.isEnabled
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -34,9 +36,28 @@ struct GeneralSettingsView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+
+                // Launch at Login Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Startup")
+                        .font(.headline)
+
+                    Toggle("Launch at Login", isOn: $launchAtLogin)
+                        .onChange(of: launchAtLogin) { newValue in
+                            LaunchAtLoginService.shared.setEnabled(newValue)
+                        }
+
+                    Text("Automatically start ShortcutOverlay when you log in")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .onAppear {
+            // Refresh from system state in case user changed it in System Settings
+            launchAtLogin = LaunchAtLoginService.shared.isEnabled
         }
     }
 
