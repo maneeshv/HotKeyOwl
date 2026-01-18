@@ -20,17 +20,27 @@ struct OverlayView: View {
         }
     }
 
-    /// Group filtered shortcuts by category for display
+    /// Group filtered shortcuts by category for display, preserving array order within each category
     private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
-        let grouped = Dictionary(grouping: filteredShortcuts) { shortcut in
-            shortcut.category ?? "General"
+        var categoryOrder: [String] = []
+        var grouped: [String: [ShortcutItem]] = [:]
+
+        for shortcut in filteredShortcuts {
+            let category = shortcut.category ?? "General"
+            if grouped[category] == nil {
+                categoryOrder.append(category)
+            }
+            grouped[category, default: []].append(shortcut)
         }
+
         // Sort categories alphabetically, but put "General" last
-        return grouped.sorted { lhs, rhs in
-            if lhs.key == "General" { return false }
-            if rhs.key == "General" { return true }
-            return lhs.key < rhs.key
-        }.map { (category: $0.key, shortcuts: $0.value) }
+        categoryOrder.sort { lhs, rhs in
+            if lhs == "General" { return false }
+            if rhs == "General" { return true }
+            return lhs < rhs
+        }
+
+        return categoryOrder.map { (category: $0, shortcuts: grouped[$0]!) }
     }
 
     var body: some View {

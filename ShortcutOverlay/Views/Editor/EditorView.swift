@@ -56,17 +56,27 @@ struct EditorView: View {
 
     // MARK: - Computed Properties
 
-    /// Group shortcuts by category for display
+    /// Group shortcuts by category for display, preserving array order within each category
     private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
-        let grouped = Dictionary(grouping: shortcuts) { shortcut in
-            shortcut.category ?? "General"
+        var categoryOrder: [String] = []
+        var grouped: [String: [ShortcutItem]] = [:]
+
+        for shortcut in shortcuts {
+            let category = shortcut.category ?? "General"
+            if grouped[category] == nil {
+                categoryOrder.append(category)
+            }
+            grouped[category, default: []].append(shortcut)
         }
+
         // Sort categories alphabetically, but put "General" last
-        return grouped.sorted { lhs, rhs in
-            if lhs.key == "General" { return false }
-            if rhs.key == "General" { return true }
-            return lhs.key < rhs.key
-        }.map { (category: $0.key, shortcuts: $0.value) }
+        categoryOrder.sort { lhs, rhs in
+            if lhs == "General" { return false }
+            if rhs == "General" { return true }
+            return lhs < rhs
+        }
+
+        return categoryOrder.map { (category: $0, shortcuts: grouped[$0]!) }
     }
 
     /// Get unique categories from current shortcuts for suggestions
@@ -135,6 +145,9 @@ struct EditorView: View {
                                         deleteShortcut(shortcut)
                                     }
                                 )
+                            }
+                            .onMove { indices, newOffset in
+                                moveShortcuts(from: indices, to: newOffset, inCategory: group.category)
                             }
                         }
                     }
@@ -232,6 +245,45 @@ struct EditorView: View {
         shortcuts.removeAll { $0.id == shortcut.id }
         shortcutStore.deleteShortcut(id: shortcut.id, for: selectedApp.bundleIdentifier)
     }
+
+    private func moveShortcuts(from indices: IndexSet, to newOffset: Int, inCategory category: String) {
+        guard let selectedApp = selectedApp else { return }
+
+        // Get the shortcuts in this category with their global indices
+        var categoryShortcuts: [(globalIndex: Int, shortcut: ShortcutItem)] = []
+        for (index, shortcut) in shortcuts.enumerated() {
+            let shortcutCategory = shortcut.category ?? "General"
+            if shortcutCategory == category {
+                categoryShortcuts.append((globalIndex: index, shortcut: shortcut))
+            }
+        }
+
+        // Extract just the shortcuts for manipulation
+        var categoryItems = categoryShortcuts.map { $0.shortcut }
+
+        // Perform the move within the category
+        categoryItems.move(fromOffsets: indices, toOffset: newOffset)
+
+        // Rebuild the full shortcuts array with the new order
+        var newShortcuts: [ShortcutItem] = []
+        var categoryIndex = 0
+
+        for shortcut in shortcuts {
+            let shortcutCategory = shortcut.category ?? "General"
+            if shortcutCategory == category {
+                // Use the reordered item from categoryItems
+                newShortcuts.append(categoryItems[categoryIndex])
+                categoryIndex += 1
+            } else {
+                // Keep non-matching shortcuts in their original position
+                newShortcuts.append(shortcut)
+            }
+        }
+
+        // Update local state and persist
+        shortcuts = newShortcuts
+        shortcutStore.setShortcuts(newShortcuts, for: selectedApp.bundleIdentifier, appName: selectedApp.name)
+    }
 }
 
 // MARK: - Shortcut List Row
@@ -243,6 +295,11 @@ struct ShortcutListRow: View {
 
     var body: some View {
         HStack {
+            // Drag handle
+            Image(systemName: "line.3.horizontal")
+                .foregroundColor(.secondary)
+                .font(.system(size: 12))
+
             // Keys
             HStack(spacing: 4) {
                 ForEach(shortcut.modifiers, id: \.self) { modifier in
