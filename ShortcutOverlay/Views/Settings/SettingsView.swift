@@ -1,5 +1,19 @@
 import SwiftUI
 
+/// Settings section for sidebar navigation
+enum SettingsSection: String, CaseIterable, Identifiable {
+    case general = "General"
+    case icloud = "iCloud"
+
+    var id: String { rawValue }
+    var icon: String {
+        switch self {
+        case .general: return "gearshape"
+        case .icloud: return "icloud"
+        }
+    }
+}
+
 /// Main settings view for configuring application preferences
 struct SettingsView: View {
     @ObservedObject var preferencesManager: PreferencesManager
@@ -12,6 +26,7 @@ struct SettingsView: View {
     @State private var workingHotkeyMode: HotkeyMode
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var selectedSection: SettingsSection? = .general
 
     init(preferencesManager: PreferencesManager, syncService: iCloudSyncService, hotkeyService: HotkeyService, onSave: @escaping () -> Void, onCancel: @escaping () -> Void) {
         self.preferencesManager = preferencesManager
@@ -25,55 +40,30 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 8) {
-                Text("\(AppConstants.appName) Settings")
-                    .font(.title2)
-                    .bold()
-
-                Text("Configure your global hotkey and preferences")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top, 24)
-            .padding(.bottom, 16)
-
-            Divider()
-
-            // Content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    HotkeyRecorderView(
-                        config: $workingConfig,
-                        onValidationError: { message in
-                            alertMessage = message
-                            showAlert = true
-                        }
-                    )
-
-                    // Hotkey Mode Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Activation Mode")
-                            .font(.headline)
-
-                        Picker("", selection: $workingHotkeyMode) {
-                            Text("Hold to show").tag(HotkeyMode.hold)
-                            Text("Press to toggle").tag(HotkeyMode.toggle)
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-
-                        Text(modeDescription)
-                            .font(.caption)
+            NavigationSplitView {
+                SettingsSidebar(selection: $selectedSection)
+                    .navigationSplitViewColumnWidth(min: 150, ideal: 180)
+            } detail: {
+                Group {
+                    switch selectedSection {
+                    case .general:
+                        GeneralSettingsView(
+                            workingConfig: $workingConfig,
+                            workingHotkeyMode: $workingHotkeyMode,
+                            onValidationError: { message in
+                                alertMessage = message
+                                showAlert = true
+                            }
+                        )
+                    case .icloud:
+                        iCloudSettingsView(syncService: syncService)
+                    case .none:
+                        Text("Select a section")
                             .foregroundColor(.secondary)
                     }
-
-                    Divider()
-
-                    iCloudSyncSettingsView(syncService: syncService)
                 }
-                .padding()
             }
+            .navigationSplitViewStyle(.balanced)
 
             Divider()
 
@@ -94,20 +84,11 @@ struct SettingsView: View {
             }
             .padding()
         }
-        .frame(width: 500, height: 400)
+        .frame(width: 600, height: 450)
         .alert("Invalid Hotkey", isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(alertMessage)
-        }
-    }
-
-    private var modeDescription: String {
-        switch workingHotkeyMode {
-        case .hold:
-            return "Press and hold the hotkey to show the overlay. Release to hide."
-        case .toggle:
-            return "Press the hotkey to show the overlay. Press again or Esc to hide."
         }
     }
 

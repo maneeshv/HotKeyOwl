@@ -310,7 +310,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let window = createWindow(
             title: "Settings",
             contentView: settingsView,
-            size: NSSize(width: 500, height: 400),
+            size: NSSize(width: 600, height: 450),
             styleMask: [.titled, .closable]
         )
 
