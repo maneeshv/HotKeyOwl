@@ -49,3 +49,16 @@ struct GeneralSettingsView: View {
         }
     }
 }
+
+#if DEBUG
+struct GeneralSettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        GeneralSettingsView(
+            workingConfig: .constant(AppPreferences.default.globalHotkey),
+            workingHotkeyMode: .constant(.hold),
+            onValidationError: { _ in }
+        )
+        .frame(width: 400, height: 300)
+    }
+}
+#endif

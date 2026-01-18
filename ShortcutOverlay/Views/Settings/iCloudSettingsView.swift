@@ -13,8 +13,16 @@ struct iCloudSettingsView: View {
 
                 iCloudSyncSettingsView(syncService: syncService)
             }
-            .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
+
+#if DEBUG
+struct iCloudSettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        iCloudSettingsView(syncService: iCloudSyncService())
+            .frame(width: 400)
+    }
+}
+#endif

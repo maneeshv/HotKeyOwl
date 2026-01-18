@@ -12,3 +12,12 @@ struct SettingsSidebar: View {
         .listStyle(.sidebar)
     }
 }
+
+#if DEBUG
+struct SettingsSidebar_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsSidebar(selection: .constant(.general))
+            .frame(width: 180)
+    }
+}
+#endif
