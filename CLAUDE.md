@@ -37,7 +37,6 @@ ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the
 ### Key Patterns
 
 - **Overlay Window**: `NSPanel` with `.borderless`, `.nonactivatingPanel`, `.floating` level - doesn't steal focus
-- **Press-and-hold**: Timer-based detection (500ms threshold) in HotkeyService
 - **Notification-driven**: Services communicate via `NotificationCenter` (see `Notification+Names.swift`)
 - **Hotkey Recording**: `HotkeyRecorderView` and `ShortcutRecorderField` use local event monitors to capture key combinations
 

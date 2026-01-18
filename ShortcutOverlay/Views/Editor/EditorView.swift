@@ -38,6 +38,7 @@ struct EditorView: View {
                 ShortcutFormSheet(
                     appInfo: selectedApp,
                     shortcut: editingShortcut,
+                    existingCategories: existingCategories,
                     onSave: { shortcut in
                         saveShortcut(shortcut)
                     },
@@ -51,6 +52,27 @@ struct EditorView: View {
         .onAppear {
             loadSelectedApp()
         }
+    }
+
+    // MARK: - Computed Properties
+
+    /// Group shortcuts by category for display
+    private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
+        let grouped = Dictionary(grouping: shortcuts) { shortcut in
+            shortcut.category ?? "General"
+        }
+        // Sort categories alphabetically, but put "General" last
+        return grouped.sorted { lhs, rhs in
+            if lhs.key == "General" { return false }
+            if rhs.key == "General" { return true }
+            return lhs.key < rhs.key
+        }.map { (category: $0.key, shortcuts: $0.value) }
+    }
+
+    /// Get unique categories from current shortcuts for suggestions
+    private var existingCategories: [String] {
+        let categories = Set(shortcuts.compactMap { $0.category })
+        return categories.sorted()
     }
 
     // MARK: - Sections
@@ -100,17 +122,21 @@ struct EditorView: View {
                 noShortcutsState
             } else {
                 List {
-                    ForEach(shortcuts) { shortcut in
-                        ShortcutListRow(
-                            shortcut: shortcut,
-                            onEdit: {
-                                editingShortcut = shortcut
-                                showingAddSheet = true
-                            },
-                            onDelete: {
-                                deleteShortcut(shortcut)
+                    ForEach(groupedShortcuts, id: \.category) { group in
+                        Section(header: groupedShortcuts.count > 1 ? Text(group.category).font(.headline) : nil) {
+                            ForEach(group.shortcuts) { shortcut in
+                                ShortcutListRow(
+                                    shortcut: shortcut,
+                                    onEdit: {
+                                        editingShortcut = shortcut
+                                        showingAddSheet = true
+                                    },
+                                    onDelete: {
+                                        deleteShortcut(shortcut)
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
                 .listStyle(.inset)
@@ -269,6 +295,7 @@ struct ShortcutFormSheet: View {
 
     let appInfo: AppInfo
     let shortcut: ShortcutItem?
+    let existingCategories: [String]
     let onSave: (ShortcutItem) -> Void
     let onCancel: () -> Void
 
@@ -277,16 +304,19 @@ struct ShortcutFormSheet: View {
     @State private var manualInput: String = ""
     @State private var parseError: String?
     @State private var description: String = ""
+    @State private var category: String = ""
 
-    init(appInfo: AppInfo, shortcut: ShortcutItem?, onSave: @escaping (ShortcutItem) -> Void, onCancel: @escaping () -> Void) {
+    init(appInfo: AppInfo, shortcut: ShortcutItem?, existingCategories: [String] = [], onSave: @escaping (ShortcutItem) -> Void, onCancel: @escaping () -> Void) {
         self.appInfo = appInfo
         self.shortcut = shortcut
+        self.existingCategories = existingCategories
         self.onSave = onSave
         self.onCancel = onCancel
 
         // Initialize with existing values if editing
         if let shortcut = shortcut {
             _description = State(initialValue: shortcut.description)
+            _category = State(initialValue: shortcut.category ?? "")
 
             // Check if this looks like a manual entry (contains comma or has no modifiers with multi-char key)
             let isManualEntry = shortcut.key.contains(",") ||
@@ -375,6 +405,37 @@ struct ShortcutFormSheet: View {
                     TextField("What does this shortcut do?", text: $description)
                         .textFieldStyle(.roundedBorder)
                 }
+
+                // Category section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Category")
+                        .font(.headline)
+
+                    HStack(spacing: 8) {
+                        TextField("e.g., tmux, Neovim", text: $category)
+                            .textFieldStyle(.roundedBorder)
+
+                        if !existingCategories.isEmpty {
+                            Menu {
+                                ForEach(existingCategories, id: \.self) { existingCategory in
+                                    Button(existingCategory) {
+                                        category = existingCategory
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "chevron.down.circle")
+                                    .foregroundColor(.secondary)
+                            }
+                            .menuStyle(.borderlessButton)
+                            .frame(width: 24)
+                            .help("Select from existing categories")
+                        }
+                    }
+
+                    Text("Leave empty for General category")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
@@ -400,7 +461,7 @@ struct ShortcutFormSheet: View {
             .padding(.horizontal)
         }
         .padding()
-        .frame(width: 500, height: 380)
+        .frame(width: 500, height: 480)
     }
 
     // MARK: - Computed Properties
@@ -485,6 +546,8 @@ struct ShortcutFormSheet: View {
 
     private func saveShortcut() {
         let newShortcut: ShortcutItem
+        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+        let categoryValue: String? = trimmedCategory.isEmpty ? nil : trimmedCategory
 
         if inputMode == .autoCapture {
             guard let captured = capturedShortcut else { return }
@@ -492,7 +555,8 @@ struct ShortcutFormSheet: View {
                 id: shortcut?.id ?? UUID(),
                 key: captured.key,
                 modifiers: captured.modifiers,
-                description: description
+                description: description,
+                category: categoryValue
             )
         } else {
             let result = ShortcutParser.parse(manualInput)
@@ -502,7 +566,8 @@ struct ShortcutFormSheet: View {
                     id: shortcut?.id ?? UUID(),
                     key: key,
                     modifiers: modifiers,
-                    description: description
+                    description: description,
+                    category: categoryValue
                 )
             case .sequence(let displayText):
                 // Store full sequence in key field, empty modifiers
@@ -510,7 +575,8 @@ struct ShortcutFormSheet: View {
                     id: shortcut?.id ?? UUID(),
                     key: displayText,
                     modifiers: [],
-                    description: description
+                    description: description,
+                    category: categoryValue
                 )
             case .invalid:
                 return
