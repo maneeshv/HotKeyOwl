@@ -20,11 +20,6 @@ struct OverlayView: View {
         }.map { (category: $0.key, shortcuts: $0.value) }
     }
 
-    /// Whether to show section headers (only when multiple categories exist)
-    private var shouldShowHeaders: Bool {
-        groupedShortcuts.count > 1
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             // App header with icon and name
@@ -57,35 +52,44 @@ struct OverlayView: View {
 
     private var shortcutsList: some View {
         ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(groupedShortcuts, id: \.category) { group in
-                    // Section header (only show when multiple categories)
-                    if shouldShowHeaders {
-                        sectionHeader(group.category)
-                    }
-
-                    // Shortcuts in this category
-                    ForEach(group.shortcuts) { shortcut in
+            if groupedShortcuts.count == 1 {
+                // Single category: full-width vertical list
+                LazyVStack(spacing: 8) {
+                    ForEach(groupedShortcuts[0].shortcuts) { shortcut in
                         ShortcutRowView(shortcut: shortcut)
                     }
                 }
+                .padding(16)
+            } else {
+                // Multiple categories: 2-column grid
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), alignment: .top),
+                    GridItem(.flexible(), alignment: .top)
+                ], alignment: .leading, spacing: 16) {
+                    ForEach(groupedShortcuts, id: \.category) { group in
+                        categorySectionView(category: group.category, shortcuts: group.shortcuts)
+                    }
+                }
+                .padding(16)
             }
-            .padding(16)
         }
-        .frame(maxHeight: 380)
+        .frame(maxHeight: 500)
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        HStack {
-            Text(title.uppercased())
+    private func categorySectionView(category: String, shortcuts: [ShortcutItem]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Section header
+            Text(category.uppercased())
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.white.opacity(0.5))
                 .tracking(1)
+                .padding(.bottom, 4)
 
-            Spacer()
+            // Shortcuts in this category
+            ForEach(shortcuts) { shortcut in
+                ShortcutRowView(shortcut: shortcut)
+            }
         }
-        .padding(.top, 8)
-        .padding(.bottom, 4)
     }
 
     private var emptyState: some View {
@@ -129,7 +133,7 @@ struct OverlayView: View {
     )
 }
 
-#Preview("With Categories") {
+#Preview("With Categories - Grid") {
     OverlayView(
         appInfo: AppInfo(
             bundleIdentifier: "dev.warp.Warp-Stable",
@@ -149,6 +153,36 @@ struct OverlayView: View {
             ShortcutItem(key: "i", modifiers: [], description: "Insert Mode", category: "Neovim"),
             ShortcutItem(key: "v", modifiers: [], description: "Visual Mode", category: "Neovim"),
             ShortcutItem(key: ":w", modifiers: [], description: "Save File", category: "Neovim"),
+        ]
+    )
+}
+
+#Preview("With 4+ Categories - Grid") {
+    OverlayView(
+        appInfo: AppInfo(
+            bundleIdentifier: "dev.warp.Warp-Stable",
+            name: "Warp",
+            icon: NSWorkspace.shared.icon(forFile: "/Applications/Warp.app")
+        ),
+        shortcuts: [
+            // Warp shortcuts
+            ShortcutItem(key: "T", modifiers: ["⌘"], description: "New Tab", category: "Warp"),
+            ShortcutItem(key: "W", modifiers: ["⌘"], description: "Close Tab", category: "Warp"),
+            ShortcutItem(key: "K", modifiers: ["⌘"], description: "Clear Terminal", category: "Warp"),
+            // tmux shortcuts
+            ShortcutItem(key: "Ctrl+B, C", modifiers: [], description: "New Window", category: "tmux"),
+            ShortcutItem(key: "Ctrl+B, N", modifiers: [], description: "Next Window", category: "tmux"),
+            ShortcutItem(key: "Ctrl+B, %", modifiers: [], description: "Split Horizontal", category: "tmux"),
+            ShortcutItem(key: "Ctrl+B, \"", modifiers: [], description: "Split Vertical", category: "tmux"),
+            // Neovim shortcuts
+            ShortcutItem(key: "i", modifiers: [], description: "Insert Mode", category: "Neovim"),
+            ShortcutItem(key: "v", modifiers: [], description: "Visual Mode", category: "Neovim"),
+            ShortcutItem(key: ":w", modifiers: [], description: "Save File", category: "Neovim"),
+            ShortcutItem(key: ":q", modifiers: [], description: "Quit", category: "Neovim"),
+            // Git shortcuts
+            ShortcutItem(key: "gs", modifiers: [], description: "Git Status", category: "Git"),
+            ShortcutItem(key: "gc", modifiers: [], description: "Git Commit", category: "Git"),
+            ShortcutItem(key: "gp", modifiers: [], description: "Git Push", category: "Git"),
         ]
     )
 }
