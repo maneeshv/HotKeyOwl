@@ -5,11 +5,24 @@ struct OverlayView: View {
     let appInfo: AppInfo
     let shortcuts: [ShortcutItem]
 
+    // MARK: - State
+
+    @State private var searchText: String = ""
+    @FocusState private var isSearchFocused: Bool
+
     // MARK: - Computed Properties
 
-    /// Group shortcuts by category for display
+    /// Filter shortcuts by description (case-insensitive)
+    private var filteredShortcuts: [ShortcutItem] {
+        guard !searchText.isEmpty else { return shortcuts }
+        return shortcuts.filter { shortcut in
+            shortcut.description.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    /// Group filtered shortcuts by category for display
     private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
-        let grouped = Dictionary(grouping: shortcuts) { shortcut in
+        let grouped = Dictionary(grouping: filteredShortcuts) { shortcut in
             shortcut.category ?? "General"
         }
         // Sort categories alphabetically, but put "General" last
@@ -29,9 +42,18 @@ struct OverlayView: View {
                 .background(Color.white.opacity(0.1))
                 .padding(.horizontal, 16)
 
-            // Shortcuts list or empty state
+            // Search bar (only show if there are shortcuts to search)
+            if !shortcuts.isEmpty {
+                searchBar
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+            }
+
+            // Shortcuts list, empty state, or no results state
             if shortcuts.isEmpty {
                 emptyState
+            } else if filteredShortcuts.isEmpty {
+                noResultsState
             } else {
                 shortcutsList
             }
@@ -46,6 +68,12 @@ struct OverlayView: View {
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+        .onAppear {
+            // Auto-focus search bar with small delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isSearchFocused = true
+            }
+        }
     }
 
     // MARK: - Subviews
@@ -110,6 +138,53 @@ struct OverlayView: View {
         }
         .frame(height: 200)
         .padding()
+    }
+
+    private var noResultsState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundColor(.white.opacity(0.3))
+
+            Text("No Matching Shortcuts")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
+
+            Text("Try a different search term")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.6))
+        }
+        .frame(height: 200)
+        .padding()
+    }
+
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.5))
+
+            TextField("Search shortcuts...", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(.system(size: 14))
+                .foregroundColor(.white)
+                .focused($isSearchFocused)
+
+            if !searchText.isEmpty {
+                Button(action: { searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.white.opacity(0.1))
+        )
     }
 }
 

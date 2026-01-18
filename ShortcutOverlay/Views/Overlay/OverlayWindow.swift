@@ -76,18 +76,14 @@ class OverlayWindow: NSPanel {
 
     // MARK: - Window Behavior Overrides
 
-    /// Prevent window from becoming key (stealing focus)
+    /// Allow window to become key for search field input
+    /// The .nonactivatingPanel style mask ensures we don't disruptively steal focus
     override var canBecomeKey: Bool {
-        return false
+        return true
     }
 
     /// Prevent window from becoming main
     override var canBecomeMain: Bool {
-        return false
-    }
-
-    /// Prevent window from accepting first responder
-    override var acceptsFirstResponder: Bool {
         return false
     }
 
