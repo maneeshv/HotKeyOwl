@@ -21,4 +21,7 @@ extension Notification.Name {
 
     /// Posted when shortcuts are updated from iCloud
     static let shortcutsDidChangeRemotely = Notification.Name("com.docketai.HotKeyOwl.shortcutsDidChangeRemotely")
+
+    /// Posted when the user requests to open the shortcut editor from the overlay
+    static let openEditorFromOverlay = Notification.Name("com.docketai.HotKeyOwl.openEditorFromOverlay")
 }

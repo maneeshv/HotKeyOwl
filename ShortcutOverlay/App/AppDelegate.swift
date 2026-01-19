@@ -208,6 +208,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: .hideOverlay,
             object: nil
         )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleOpenEditorFromOverlay(_:)),
+            name: .openEditorFromOverlay,
+            object: nil
+        )
+    }
+
+    @objc private func handleOpenEditorFromOverlay(_ notification: Notification) {
+        let bundleIdentifier = notification.userInfo?["bundleIdentifier"] as? String
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.openEditor(for: bundleIdentifier)
+        }
     }
 
     // MARK: - Overlay Management

@@ -52,12 +52,10 @@ struct OverlayView: View {
                 .background(Color.white.opacity(0.1))
                 .padding(.horizontal, 16)
 
-            // Search bar (only show if there are shortcuts to search)
-            if !shortcuts.isEmpty {
-                searchBar
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-            }
+            // Search bar with add button
+            searchBarWithAddButton
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
 
             // Shortcuts list, empty state, or no results state
             if shortcuts.isEmpty {
@@ -84,6 +82,26 @@ struct OverlayView: View {
                 isSearchFocused = true
             }
         }
+        .background(
+            // Handle ⌘N keyboard shortcut to open editor
+            KeyboardShortcutHandler(
+                key: "n",
+                modifiers: .command,
+                action: requestOpenEditor
+            )
+        )
+    }
+
+    // MARK: - Private Methods
+
+    /// Hides the overlay and posts a notification to open the shortcut editor for this app
+    private func requestOpenEditor() {
+        NotificationCenter.default.post(name: .hideOverlay, object: nil)
+        NotificationCenter.default.post(
+            name: .openEditorFromOverlay,
+            object: nil,
+            userInfo: ["bundleIdentifier": appInfo.bundleIdentifier]
+        )
     }
 
     // MARK: - Subviews
@@ -168,33 +186,45 @@ struct OverlayView: View {
         .padding()
     }
 
-    private var searchBar: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.5))
+    private var searchBarWithAddButton: some View {
+        HStack(spacing: 12) {
+            // Search bar
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.5))
 
-            TextField("Search shortcuts...", text: $searchText)
-                .textFieldStyle(.plain)
-                .font(.system(size: 14))
-                .foregroundColor(.white)
-                .focused($isSearchFocused)
+                TextField("Search shortcuts...", text: $searchText)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white)
+                    .focused($isSearchFocused)
 
-            if !searchText.isEmpty {
-                Button(action: { searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.5))
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white.opacity(0.1))
+            )
+
+            // Add button - opens editor
+            Button(action: requestOpenEditor) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .buttonStyle(.plain)
+            .help("Add Shortcut (⌘N)")
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.1))
-        )
     }
 }
 
@@ -281,4 +311,72 @@ struct OverlayView: View {
         ),
         shortcuts: []
     )
+}
+
+// MARK: - Keyboard Shortcut Handler
+
+/// A view that captures keyboard shortcuts using NSView event monitoring
+struct KeyboardShortcutHandler: NSViewRepresentable {
+    let key: String
+    let modifiers: NSEvent.ModifierFlags
+    let action: () -> Void
+
+    func makeNSView(context: Context) -> KeyboardShortcutNSView {
+        let view = KeyboardShortcutNSView()
+        view.targetKey = key.lowercased()
+        view.targetModifiers = modifiers
+        view.action = action
+        return view
+    }
+
+    func updateNSView(_ nsView: KeyboardShortcutNSView, context: Context) {
+        nsView.targetKey = key.lowercased()
+        nsView.targetModifiers = modifiers
+        nsView.action = action
+    }
+}
+
+/// NSView that monitors for keyboard shortcuts
+class KeyboardShortcutNSView: NSView {
+    var targetKey: String = ""
+    var targetModifiers: NSEvent.ModifierFlags = []
+    var action: (() -> Void)?
+
+    private var localMonitor: Any?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil {
+            startMonitoring()
+        } else {
+            stopMonitoring()
+        }
+    }
+
+    private func startMonitoring() {
+        guard localMonitor == nil else { return }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return event }
+
+            let keyPressed = event.charactersIgnoringModifiers?.lowercased() ?? ""
+            let modifiersMatch = event.modifierFlags.intersection([.command, .control, .option, .shift]) == self.targetModifiers
+
+            if keyPressed == self.targetKey && modifiersMatch {
+                self.action?()
+                return nil // Consume the event
+            }
+            return event
+        }
+    }
+
+    private func stopMonitoring() {
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+            localMonitor = nil
+        }
+    }
+
+    deinit {
+        stopMonitoring()
+    }
 }

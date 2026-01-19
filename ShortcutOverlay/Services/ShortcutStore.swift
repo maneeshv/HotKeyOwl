@@ -95,6 +95,12 @@ class ShortcutStore: ObservableObject {
         return allShortcuts[bundleIdentifier]?.shortcuts ?? []
     }
 
+    func getCategories(for bundleIdentifier: String) -> [String] {
+        let shortcuts = getShortcuts(for: bundleIdentifier)
+        let categories = Set(shortcuts.compactMap { $0.category })
+        return Array(categories).sorted()
+    }
+
     func getAppShortcuts(for bundleIdentifier: String) -> AppShortcuts? {
         return allShortcuts[bundleIdentifier]
     }
