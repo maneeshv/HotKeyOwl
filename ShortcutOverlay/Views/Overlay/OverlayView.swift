@@ -9,6 +9,7 @@ struct OverlayView: View {
 
     @State private var searchText: String = ""
     @FocusState private var isSearchFocused: Bool
+    @Environment(\.colorScheme) private var colorScheme
 
     // MARK: - Computed Properties
 
@@ -44,7 +45,9 @@ struct OverlayView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return VStack(spacing: 0) {
             // App header with icon and name
             AppHeaderView(appInfo: appInfo)
 
@@ -52,11 +55,7 @@ struct OverlayView: View {
             Rectangle()
                 .fill(
                     LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.0),
-                            Color.white.opacity(0.15),
-                            Color.white.opacity(0.0)
-                        ],
+                        colors: theme.dividerGradientColors,
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -80,7 +79,7 @@ struct OverlayView: View {
         }
         .frame(maxWidth: .infinity)
         .glassStyle(cornerRadius: 16)
-        .shadow(color: .black.opacity(0.4), radius: 30, x: 0, y: 15)
+        .shadow(color: theme.panelShadow, radius: 30, x: 0, y: 15)
         .onAppear {
             // Auto-focus search bar with small delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -138,15 +137,17 @@ struct OverlayView: View {
     }
 
     private func categorySectionView(category: String, shortcuts: [ShortcutItem]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return VStack(alignment: .leading, spacing: 8) {
             // Section header with subtle backdrop
             Text(category.uppercased())
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(theme.categoryLabel)
                 .tracking(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 4))
+                .background(theme.categoryBackground, in: RoundedRectangle(cornerRadius: 4))
                 .padding(.bottom, 4)
 
             // Shortcuts in this category
@@ -157,18 +158,20 @@ struct OverlayView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return VStack(spacing: 12) {
             Image(systemName: "keyboard")
                 .font(.system(size: 48))
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(theme.emptyIcon)
 
             Text("No Shortcuts Configured")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(theme.emptyTitle)
 
             Text("Click the menu bar icon to add shortcuts for this app")
                 .font(.system(size: 13))
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(theme.emptySubtitle)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
         }
@@ -177,42 +180,46 @@ struct OverlayView: View {
     }
 
     private var noResultsState: some View {
-        VStack(spacing: 12) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(theme.emptyIcon)
 
             Text("No Matching Shortcuts")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(theme.emptyTitle)
 
             Text("Try a different search term")
                 .font(.system(size: 13))
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(theme.emptySubtitle)
         }
         .frame(height: 200)
         .padding()
     }
 
     private var searchBarWithAddButton: some View {
-        HStack(spacing: 12) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return HStack(spacing: 12) {
             // Search bar
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(theme.searchPlaceholder)
 
                 TextField("Search shortcuts...", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.searchText)
                     .focused($isSearchFocused)
 
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(theme.clearButton)
                     }
                     .buttonStyle(.plain)
                 }
@@ -225,7 +232,7 @@ struct OverlayView: View {
             Button(action: requestOpenEditor) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 22))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(theme.addButton)
             }
             .buttonStyle(.plain)
             .help("Add Shortcut (⌘N)")
@@ -248,9 +255,31 @@ struct OverlayView: View {
             ShortcutItem(key: "T", modifiers: ["⌘", "⇧"], description: "Reopen Closed Tab"),
             ShortcutItem(key: "[", modifiers: ["⌘"], description: "Back"),
             ShortcutItem(key: "]", modifiers: ["⌘"], description: "Forward"),
-            ShortcutItem(key: "N", modifiers: ["⌘"], description: "New Window"),
+            ShortcutItem(key: "N", modifiers: ["⌘"], description: "New Window")
         ]
     )
+    .preferredColorScheme(.dark)
+}
+
+#Preview("With Shortcuts - Light") {
+    OverlayView(
+        appInfo: AppInfo(
+            bundleIdentifier: "com.apple.Safari",
+            name: "Safari",
+            icon: NSWorkspace.shared.icon(forFile: "/Applications/Safari.app")
+        ),
+        shortcuts: [
+            ShortcutItem(key: "T", modifiers: ["⌘"], description: "New Tab"),
+            ShortcutItem(key: "W", modifiers: ["⌘"], description: "Close Tab"),
+            ShortcutItem(key: "R", modifiers: ["⌘"], description: "Reload Page"),
+            ShortcutItem(key: "L", modifiers: ["⌘"], description: "Focus URL Bar"),
+            ShortcutItem(key: "T", modifiers: ["⌘", "⇧"], description: "Reopen Closed Tab"),
+            ShortcutItem(key: "[", modifiers: ["⌘"], description: "Back"),
+            ShortcutItem(key: "]", modifiers: ["⌘"], description: "Forward"),
+            ShortcutItem(key: "N", modifiers: ["⌘"], description: "New Window")
+        ]
+    )
+    .preferredColorScheme(.light)
 }
 
 #Preview("With Categories - Grid") {
@@ -272,7 +301,7 @@ struct OverlayView: View {
             // Neovim shortcuts
             ShortcutItem(key: "i", modifiers: [], description: "Insert Mode", category: "Neovim"),
             ShortcutItem(key: "v", modifiers: [], description: "Visual Mode", category: "Neovim"),
-            ShortcutItem(key: ":w", modifiers: [], description: "Save File", category: "Neovim"),
+            ShortcutItem(key: ":w", modifiers: [], description: "Save File", category: "Neovim")
         ]
     )
 }
@@ -302,7 +331,7 @@ struct OverlayView: View {
             // Git shortcuts
             ShortcutItem(key: "gs", modifiers: [], description: "Git Status", category: "Git"),
             ShortcutItem(key: "gc", modifiers: [], description: "Git Commit", category: "Git"),
-            ShortcutItem(key: "gp", modifiers: [], description: "Git Push", category: "Git"),
+            ShortcutItem(key: "gp", modifiers: [], description: "Git Push", category: "Git")
         ]
     )
 }

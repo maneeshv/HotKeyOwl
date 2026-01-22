@@ -4,6 +4,7 @@ import SwiftUI
 struct GeneralSettingsView: View {
     @Binding var workingConfig: AppPreferences.HotkeyConfiguration
     @Binding var workingHotkeyMode: HotkeyMode
+    @Binding var workingAppearanceMode: AppearanceMode
     var onValidationError: (String) -> Void
 
     @State private var launchAtLogin = LaunchAtLoginService.shared.isEnabled
@@ -33,6 +34,24 @@ struct GeneralSettingsView: View {
                     .labelsHidden()
 
                     Text(modeDescription)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                // Appearance Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Appearance")
+                        .font(.headline)
+
+                    Picker("", selection: $workingAppearanceMode) {
+                        Text("Automatic").tag(AppearanceMode.automatic)
+                        Text("Light").tag(AppearanceMode.light)
+                        Text("Dark").tag(AppearanceMode.dark)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+
+                    Text("Match the system appearance or override it for the app")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -77,6 +96,7 @@ struct GeneralSettingsView_Previews: PreviewProvider {
         GeneralSettingsView(
             workingConfig: .constant(AppPreferences.default.globalHotkey),
             workingHotkeyMode: .constant(.hold),
+            workingAppearanceMode: .constant(.automatic),
             onValidationError: { _ in }
         )
         .frame(width: 400, height: 300)

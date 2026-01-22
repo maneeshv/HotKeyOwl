@@ -8,16 +8,20 @@ struct GlassBackground<S: Shape>: View {
     let shape: S
     let cornerRadius: CGFloat
 
+    @Environment(\.colorScheme) private var colorScheme
+
     init(in shape: S, cornerRadius: CGFloat = 16) {
         self.shape = shape
         self.cornerRadius = cornerRadius
     }
 
     var body: some View {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
         ZStack {
             // Base blur layer using NSVisualEffectView
             VisualEffectBlur(
-                material: .hudWindow,
+                material: theme.glassMaterial,
                 blendingMode: .behindWindow,
                 state: .active
             )
@@ -25,11 +29,7 @@ struct GlassBackground<S: Shape>: View {
 
             // Subtle specular highlight (top edge glow)
             LinearGradient(
-                colors: [
-                    Color.white.opacity(0.15),
-                    Color.white.opacity(0.05),
-                    Color.clear
-                ],
+                colors: theme.glassHighlightGradient,
                 startPoint: .top,
                 endPoint: .center
             )
@@ -39,10 +39,7 @@ struct GlassBackground<S: Shape>: View {
             shape
                 .stroke(
                     LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.3),
-                            Color.white.opacity(0.1)
-                        ],
+                        colors: theme.glassBorderGradient,
                         startPoint: .top,
                         endPoint: .bottom
                     ),
@@ -82,6 +79,8 @@ extension View {
 // MARK: - Key Cap Glass Modifier
 
 struct KeyCapGlassModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
     func body(content: Content) -> some View {
         content
             .background(keyCapBackground)
@@ -89,7 +88,9 @@ struct KeyCapGlassModifier: ViewModifier {
     }
 
     private var keyCapBackground: some View {
-        ZStack {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return ZStack {
             // Frosted base using thin material
             RoundedRectangle(cornerRadius: 5)
                 .fill(.ultraThinMaterial)
@@ -98,10 +99,7 @@ struct KeyCapGlassModifier: ViewModifier {
             RoundedRectangle(cornerRadius: 5)
                 .fill(
                     LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.15),
-                            Color.white.opacity(0.03)
-                        ],
+                        colors: theme.keyCapInnerGradient,
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -110,13 +108,12 @@ struct KeyCapGlassModifier: ViewModifier {
     }
 
     private var keyCapBorder: some View {
-        RoundedRectangle(cornerRadius: 5)
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return RoundedRectangle(cornerRadius: 5)
             .stroke(
                 LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.35),
-                        Color.white.opacity(0.12)
-                    ],
+                    colors: theme.keyCapBorderGradient,
                     startPoint: .top,
                     endPoint: .bottom
                 ),
@@ -135,12 +132,16 @@ extension View {
 // MARK: - Search Bar Glass Modifier
 
 struct SearchBarGlassModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
     func body(content: Content) -> some View {
-        content
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return content
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                    .stroke(theme.searchBarBorder, lineWidth: 0.5)
             )
     }
 }
@@ -182,6 +183,7 @@ extension View {
         }
     }
     .frame(width: 400, height: 300)
+    .preferredColorScheme(.dark)
 }
 
 #Preview("Key Cap Glass") {
@@ -212,6 +214,7 @@ extension View {
         }
     }
     .frame(width: 300, height: 100)
+    .preferredColorScheme(.dark)
 }
 
 #Preview("Search Bar Glass") {
@@ -233,4 +236,5 @@ extension View {
         .searchBarGlassStyle()
     }
     .frame(width: 400, height: 100)
+    .preferredColorScheme(.dark)
 }

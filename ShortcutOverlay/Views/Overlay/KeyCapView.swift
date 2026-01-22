@@ -4,11 +4,15 @@ import SwiftUI
 struct KeyCapView: View {
     let text: String
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        Text(text)
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return Text(text)
             .font(.system(size: 13, weight: .semibold, design: .monospaced))
-            .foregroundColor(.white.opacity(0.95))
-            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+            .foregroundColor(theme.keyCapText)
+            .shadow(color: theme.keyCapShadow, radius: 1, x: 0, y: 1)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .keyCapGlassStyle()

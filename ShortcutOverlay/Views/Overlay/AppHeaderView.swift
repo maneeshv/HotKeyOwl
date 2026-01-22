@@ -5,8 +5,12 @@ import AppKit
 struct AppHeaderView: View {
     let appInfo: AppInfo
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        HStack(spacing: 12) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return HStack(spacing: 12) {
             // App icon
             if let icon = appInfo.icon {
                 Image(nsImage: icon)
@@ -16,15 +20,15 @@ struct AppHeaderView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             } else {
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.white.opacity(0.2))
+                    .fill(theme.rowBackground)
                     .frame(width: 32, height: 32)
             }
 
             // App name with subtle shadow for depth
             Text(appInfo.name)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                .foregroundColor(theme.primaryText)
+                .shadow(color: theme.headerShadow, radius: 2, x: 0, y: 1)
 
             Spacer()
         }
@@ -42,7 +46,6 @@ struct AppHeaderView: View {
         ))
 
         Divider()
-            .background(Color.white.opacity(0.1))
 
         AppHeaderView(appInfo: AppInfo(
             bundleIdentifier: "com.apple.finder",
@@ -50,5 +53,5 @@ struct AppHeaderView: View {
             icon: NSWorkspace.shared.icon(forFile: "/System/Library/CoreServices/Finder.app")
         ))
     }
-    .background(Color.black)
+    .padding()
 }

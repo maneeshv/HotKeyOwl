@@ -10,7 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayWindow: OverlayWindow?
 
     // Services
-    private let preferencesManager = PreferencesManager()
+    let preferencesManager = PreferencesManager()
     private lazy var hotkeyService = HotkeyService(preferencesManager: preferencesManager)
     private let appMonitorService = AppMonitorService()
     private let shortcutStore = ShortcutStore()
@@ -19,6 +19,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Window references
     private var editorWindow: NSWindow?
     private var settingsWindow: NSWindow?
+
+    private var preferredAppearance: NSAppearance? {
+        switch preferencesManager.appearanceMode {
+        case .automatic:
+            return nil
+        case .light:
+            return NSAppearance(named: .aqua)
+        case .dark:
+            return NSAppearance(named: .darkAqua)
+        }
+    }
+
+    private func applyAppearanceMode() {
+        let appearance = preferredAppearance
+        NSApp.appearance = appearance
+        overlayWindow?.appearance = appearance
+        editorWindow?.appearance = appearance
+        settingsWindow?.appearance = appearance
+    }
 
     // MARK: - App Lifecycle
 
@@ -30,6 +49,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Setup iCloud sync
         setupiCloudSync()
+
+        // Apply preferred appearance
+        applyAppearanceMode()
 
         // Start services
         appMonitorService.startMonitoring()
@@ -67,6 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Update hotkey service when preferences change from iCloud
         hotkeyService.updateHotkey(preferencesManager.globalHotkey)
         updateMenu()
+        applyAppearanceMode()
         print("☁️ Applied remote hotkey configuration")
     }
 
@@ -247,7 +270,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             appInfo: frontmostApp,
             shortcuts: shortcuts
         )
-
         // Create and show overlay window
         overlayWindow = OverlayWindow(contentView: overlayView)
         overlayWindow?.centerOnActiveScreen()
@@ -290,7 +312,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             appMonitorService: appMonitorService,
             selectedBundleId: bundleIdentifier
         )
-
         let window = createWindow(
             title: "Edit Shortcuts",
             contentView: editorView,
@@ -315,12 +336,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             onSave: { [weak self] in
                 self?.settingsWindow?.close()
                 self?.updateMenu()
+                self?.applyAppearanceMode()
             },
             onCancel: { [weak self] in
                 self?.settingsWindow?.close()
             }
         )
-
         let window = createWindow(
             title: "Settings",
             contentView: settingsView,
@@ -360,6 +381,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = NSHostingView(rootView: contentView)
         window.center()
         window.isReleasedWhenClosed = false
+        window.appearance = preferredAppearance
 
         if let minSize = minSize {
             window.minSize = minSize

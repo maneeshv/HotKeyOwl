@@ -4,8 +4,12 @@ import SwiftUI
 struct ShortcutRowView: View {
     let shortcut: ShortcutItem
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        HStack(spacing: 16) {
+        let theme = OverlayTheme(colorScheme: colorScheme)
+
+        return HStack(spacing: 16) {
             // Keyboard shortcut display
             HStack(spacing: 4) {
                 ForEach(shortcut.modifiers, id: \.self) { modifier in
@@ -17,7 +21,7 @@ struct ShortcutRowView: View {
 
             // Description
             Text(shortcut.description)
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(theme.primaryText)
                 .font(.system(size: 14))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -25,7 +29,7 @@ struct ShortcutRowView: View {
         .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.03))
+                .fill(theme.rowBackground)
         )
     }
 }

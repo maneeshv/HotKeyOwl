@@ -15,6 +15,7 @@ class OverlayWindow: NSPanel {
 
         // Create hosting controller for SwiftUI content
         let hostingView = NSHostingView(rootView: contentView)
+        hostingView.appearance = NSApp.appearance
 
         super.init(
             contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
@@ -32,6 +33,7 @@ class OverlayWindow: NSPanel {
         self.isOpaque = false
         self.hasShadow = true
         self.contentView = hostingView
+        self.appearance = NSApp.appearance
 
         // Center on screen
         self.center()

@@ -101,9 +101,19 @@ class PreferencesManager: ObservableObject {
         return preferences.hotkeyMode
     }
 
+    /// Get the current appearance mode
+    var appearanceMode: AppearanceMode {
+        return preferences.appearanceMode
+    }
+
     /// Update the hotkey mode
     func updateHotkeyMode(_ mode: HotkeyMode) {
         preferences.hotkeyMode = mode
+    }
+
+    /// Update the appearance mode
+    func updateAppearanceMode(_ mode: AppearanceMode) {
+        preferences.appearanceMode = mode
     }
 
     /// Validate hotkey configuration
