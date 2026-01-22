@@ -25,8 +25,8 @@ targets:
 
     settings:
       base:
-        PRODUCT_NAME: ShortcutOverlay
-        PRODUCT_BUNDLE_IDENTIFIER: com.docketai.ShortcutOverlay
+        PRODUCT_NAME: HotKeyOwl
+        PRODUCT_BUNDLE_IDENTIFIER: com.docketai.HotKeyOwl
         INFOPLIST_FILE: ShortcutOverlay/App/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShortcutOverlay/Resources/ShortcutOverlay.entitlements
         CODE_SIGN_IDENTITY: "-"

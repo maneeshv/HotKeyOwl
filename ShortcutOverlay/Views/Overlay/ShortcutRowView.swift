@@ -21,11 +21,11 @@ struct ShortcutRowView: View {
                 .font(.system(size: 14))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color.white.opacity(0.05))
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.white.opacity(0.03))
         )
     }
 }

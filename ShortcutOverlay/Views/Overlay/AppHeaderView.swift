@@ -20,10 +20,11 @@ struct AppHeaderView: View {
                     .frame(width: 32, height: 32)
             }
 
-            // App name
+            // App name with subtle shadow for depth
             Text(appInfo.name)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
+                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
 
             Spacer()
         }

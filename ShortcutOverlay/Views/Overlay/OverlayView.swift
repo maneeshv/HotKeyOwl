@@ -48,8 +48,20 @@ struct OverlayView: View {
             // App header with icon and name
             AppHeaderView(appInfo: appInfo)
 
-            Divider()
-                .background(Color.white.opacity(0.1))
+            // Glass divider with gradient glow
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.0),
+                            Color.white.opacity(0.15),
+                            Color.white.opacity(0.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 1)
                 .padding(.horizontal, 16)
 
             // Search bar with add button
@@ -67,15 +79,8 @@ struct OverlayView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.8))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+        .glassStyle(cornerRadius: 16)
+        .shadow(color: .black.opacity(0.4), radius: 30, x: 0, y: 15)
         .onAppear {
             // Auto-focus search bar with small delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -134,11 +139,14 @@ struct OverlayView: View {
 
     private func categorySectionView(category: String, shortcuts: [ShortcutItem]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Section header
+            // Section header with subtle backdrop
             Text(category.uppercased())
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.white.opacity(0.7))
                 .tracking(1)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 4))
                 .padding(.bottom, 4)
 
             // Shortcuts in this category
@@ -211,10 +219,7 @@ struct OverlayView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white.opacity(0.1))
-            )
+            .searchBarGlassStyle()
 
             // Add button - opens editor
             Button(action: requestOpenEditor) {

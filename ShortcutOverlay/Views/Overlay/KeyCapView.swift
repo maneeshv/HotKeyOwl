@@ -6,18 +6,12 @@ struct KeyCapView: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 13, weight: .medium, design: .monospaced))
-            .foregroundColor(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.15))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-            )
+            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+            .foregroundColor(.white.opacity(0.95))
+            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .keyCapGlassStyle()
     }
 }
 
