@@ -138,9 +138,12 @@ class iCloudSyncService: ObservableObject {
             keyValueObserver = nil
         }
 
-        // Stop metadata query
-        metadataQuery?.stop()
-        metadataQuery = nil
+        // Remove metadata query observer and stop query
+        if let query = metadataQuery {
+            NotificationCenter.default.removeObserver(self, name: .NSMetadataQueryDidUpdate, object: query)
+            query.stop()
+            metadataQuery = nil
+        }
 
         syncState = .disabled
         NotificationCenter.default.post(name: .iCloudSyncStateDidChange, object: self)
@@ -374,8 +377,11 @@ class iCloudSyncService: ObservableObject {
     }
 
     private func setupFileMetadataQuery() {
-        // Stop existing query
-        metadataQuery?.stop()
+        // Remove existing observer and stop query to prevent accumulation
+        if let existingQuery = metadataQuery {
+            NotificationCenter.default.removeObserver(self, name: .NSMetadataQueryDidUpdate, object: existingQuery)
+            existingQuery.stop()
+        }
 
         let query = NSMetadataQuery()
         query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope]

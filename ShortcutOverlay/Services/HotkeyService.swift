@@ -23,6 +23,10 @@ class HotkeyService: ObservableObject {
     // Hotkey mode
     private var hotkeyMode: HotkeyMode
 
+    // Debouncing to prevent rapid triggers that can freeze the system
+    private var lastTriggerTime: Date = .distantPast
+    private let minimumTriggerInterval: TimeInterval = 0.3
+
     // MARK: - Initialization
 
     init(preferencesManager: PreferencesManager) {
@@ -40,6 +44,12 @@ class HotkeyService: ObservableObject {
     // MARK: - Monitoring Control
 
     func startMonitoring() {
+        // Guard against repeated calls - clean up existing tap first
+        if eventTap != nil {
+            print("⚠️ Event tap already exists, stopping before restart")
+            stopMonitoring()
+        }
+
         // Check accessibility permission
         guard PermissionManager.shared.checkAccessibilityPermission() else {
             print("⚠️ Accessibility permission not granted. Cannot monitor keyboard.")
@@ -52,7 +62,9 @@ class HotkeyService: ObservableObject {
                        (1 << CGEventType.keyUp.rawValue) |
                        (1 << CGEventType.flagsChanged.rawValue)
 
-        let selfPtr = Unmanaged.passRetained(self).toOpaque()
+        // Use passUnretained since HotkeyService is a singleton that lives for app lifetime
+        // Using passRetained would create a memory leak as stopMonitoring() doesn't release it
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
 
         eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -61,7 +73,7 @@ class HotkeyService: ObservableObject {
             eventsOfInterest: CGEventMask(eventMask),
             callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
                 guard let refcon = refcon else {
-                    return Unmanaged.passRetained(event)
+                    return Unmanaged.passUnretained(event)
                 }
 
                 let service = Unmanaged<HotkeyService>.fromOpaque(refcon).takeUnretainedValue()
@@ -101,13 +113,24 @@ class HotkeyService: ObservableObject {
 
     private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         // Handle tap being disabled
+        // IMPORTANT: Don't re-enable immediately in the callback - this can cause an infinite loop
+        // where the system disables the tap, we re-enable, system disables again, etc.
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            print("⚠️ Event tap disabled, re-enabling...")
-            if let eventTap = eventTap {
+            print("⚠️ Event tap disabled, will re-enable after delay...")
+
+            // Defer re-enabling to break potential infinite loop
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                guard let self = self, let eventTap = self.eventTap else { return }
                 CGEvent.tapEnable(tap: eventTap, enable: true)
+                print("✅ Event tap re-enabled after delay")
             }
-            NotificationCenter.default.post(name: .eventTapDisabled, object: nil)
-            return Unmanaged.passRetained(event)
+
+            // Post notification on main thread (callback runs on system event thread)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .eventTapDisabled, object: nil)
+            }
+
+            return Unmanaged.passUnretained(event)
         }
 
         // Process keyboard events
@@ -119,8 +142,8 @@ class HotkeyService: ObservableObject {
             handleFlagsChanged(event)
         }
 
-        // Pass event through to system
-        return Unmanaged.passRetained(event)
+        // Pass event through to system (use passUnretained since we didn't create this event)
+        return Unmanaged.passUnretained(event)
     }
 
     private func handleKeyDown(_ event: CGEvent) {
@@ -135,7 +158,7 @@ class HotkeyService: ObservableObject {
 
         // Check if it's our target key with correct modifiers
         guard keyCode == targetKeyCode else { return }
-        guard flags.contains(.maskControl) && flags.contains(.maskAlternate) && flags.contains(.maskCommand) else { return }
+        guard flags.isSuperset(of: requiredModifiers) else { return }
 
         // Ignore if already processing (for hold mode)
         guard !isCurrentlyPressed else { return }
@@ -179,7 +202,7 @@ class HotkeyService: ObservableObject {
         // In hold mode: if modifiers are released while overlay is shown, hide it
         // In toggle mode: do nothing (user can release modifiers freely)
         if hotkeyMode == .hold && overlayShown {
-            let hasRequiredModifiers = flags.contains(.maskControl) && flags.contains(.maskAlternate) && flags.contains(.maskCommand)
+            let hasRequiredModifiers = flags.isSuperset(of: requiredModifiers)
             if !hasRequiredModifiers {
                 hideOverlay()
             }
@@ -190,6 +213,14 @@ class HotkeyService: ObservableObject {
 
     private func triggerOverlay() {
         guard !overlayShown else { return }
+
+        // Debounce rapid triggers to prevent system freeze from event queue backup
+        let now = Date()
+        guard now.timeIntervalSince(lastTriggerTime) >= minimumTriggerInterval else {
+            print("⏳ Debouncing overlay trigger")
+            return
+        }
+        lastTriggerTime = now
 
         overlayShown = true
         isHotkeyHeld = true
