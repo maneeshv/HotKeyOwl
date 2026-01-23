@@ -6,16 +6,14 @@ import Carbon
 class PreferencesManager: ObservableObject {
     // MARK: - Published Properties
 
-    @Published var preferences: AppPreferences {
-        didSet {
-            save()
-        }
-    }
+    @Published private(set) var preferences: AppPreferences
 
     // MARK: - Private Properties
 
     private let defaults = UserDefaults.standard
     private let preferencesKey = "appPreferences"
+    private let persistence: PreferencesPersistence
+    private let saveDebounceInterval: TimeInterval = 0.4
 
     // MARK: - iCloud Sync Integration
 
@@ -28,6 +26,8 @@ class PreferencesManager: ObservableObject {
     // MARK: - Initialization
 
     init() {
+        persistence = PreferencesPersistence(defaults: defaults, key: preferencesKey)
+
         // Load from UserDefaults or use default
         if let data = defaults.data(forKey: preferencesKey) {
             let decoder = JSONDecoder()
@@ -49,26 +49,26 @@ class PreferencesManager: ObservableObject {
 
     /// Save current preferences to UserDefaults
     func save() {
-        // Create a copy for saving to avoid triggering didSet recursion
-        var preferencesToSave = preferences
+        let shouldSync = !isApplyingRemote
+        let preferencesToSave = preferences
 
-        // Update lastModified timestamp on the copy
-        if !isApplyingRemote {
-            preferencesToSave.lastModified = Date()
-        }
+        Task { [weak self] in
+            guard let self else { return }
 
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        if let encoded = try? encoder.encode(preferencesToSave) {
-            defaults.set(encoded, forKey: preferencesKey)
-            print("✅ Saved preferences to UserDefaults")
+            do {
+                let outcome = try await persistence.scheduleSave(
+                    preferencesToSave,
+                    debounceInterval: saveDebounceInterval
+                )
 
-            // Trigger iCloud sync if not applying remote changes
-            if !isApplyingRemote {
-                syncService?.syncPreferencesToCloud()
+                if outcome == .saved, shouldSync {
+                    await MainActor.run {
+                        self.syncService?.syncPreferencesToCloud()
+                    }
+                }
+            } catch {
+                print("❌ Failed to encode preferences: \(error)")
             }
-        } else {
-            print("❌ Failed to encode preferences")
         }
     }
 
@@ -76,6 +76,7 @@ class PreferencesManager: ObservableObject {
     func applyRemotePreferences(_ remotePreferences: AppPreferences) {
         isApplyingRemote = true
         preferences = remotePreferences
+        save()
         isApplyingRemote = false
         print("☁️ Applied remote preferences")
     }
@@ -83,12 +84,40 @@ class PreferencesManager: ObservableObject {
     /// Reset preferences to default values
     func reset() {
         preferences = .default
+        save()
         print("🔄 Reset preferences to default")
     }
 
     /// Update the global hotkey
     func updateGlobalHotkey(_ config: AppPreferences.HotkeyConfiguration) {
-        preferences.globalHotkey = config
+        updatePreferences { current in
+            current.globalHotkey = config
+        }
+    }
+
+    /// Update the hotkey mode
+    func updateHotkeyMode(_ mode: HotkeyMode) {
+        updatePreferences { current in
+            current.hotkeyMode = mode
+        }
+    }
+
+    /// Update the appearance mode
+    func updateAppearanceMode(_ mode: AppearanceMode) {
+        updatePreferences { current in
+            current.appearanceMode = mode
+        }
+    }
+
+    /// Update multiple preferences at once
+    func updatePreferences(_ update: (inout AppPreferences) -> Void) {
+        var updated = preferences
+        update(&updated)
+        if !isApplyingRemote {
+            updated.lastModified = Date()
+        }
+        preferences = updated
+        save()
     }
 
     /// Get the current global hotkey configuration
@@ -104,16 +133,6 @@ class PreferencesManager: ObservableObject {
     /// Get the current appearance mode
     var appearanceMode: AppearanceMode {
         return preferences.appearanceMode
-    }
-
-    /// Update the hotkey mode
-    func updateHotkeyMode(_ mode: HotkeyMode) {
-        preferences.hotkeyMode = mode
-    }
-
-    /// Update the appearance mode
-    func updateAppearanceMode(_ mode: AppearanceMode) {
-        preferences.appearanceMode = mode
     }
 
     /// Validate hotkey configuration

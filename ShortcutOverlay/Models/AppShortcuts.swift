@@ -18,6 +18,10 @@ struct AppShortcuts: Codable {
         self.lastModified = Date()
     }
 
+    mutating func touch() {
+        lastModified = Date()
+    }
+
     /// Get shortcuts grouped by category
     var groupedShortcuts: [String: [ShortcutItem]] {
         Dictionary(grouping: shortcuts) { shortcut in

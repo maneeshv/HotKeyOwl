@@ -10,8 +10,9 @@ enum iCloudSyncState: Equatable {
     case error(String)
 }
 
-/// Service for managing iCloud synchronization of preferences and shortcuts
+@MainActor
 class iCloudSyncService: ObservableObject {
+
     // MARK: - Published Properties
 
     /// Current sync state
@@ -32,6 +33,7 @@ class iCloudSyncService: ObservableObject {
         }
     }
 
+
     /// Last sync date for display
     @Published private(set) var lastSyncDate: Date?
 
@@ -40,7 +42,8 @@ class iCloudSyncService: ObservableObject {
     private let keyValueStore = NSUbiquitousKeyValueStore.default
     private var keyValueObserver: NSObjectProtocol?
     private var metadataQuery: NSMetadataQuery?
-    private var cancellables = Set<AnyCancellable>()
+    private let coordinator = iCloudSyncCoordinator()
+    private let pipeline = iCloudSyncPipeline()
 
     // References to managers (set by AppDelegate)
     weak var preferencesManager: PreferencesManager?
@@ -70,12 +73,14 @@ class iCloudSyncService: ObservableObject {
         )
 
         if syncEnabled && iCloudAvailable {
-            startSync()
+            Task { [weak self] in
+                guard let self else { return }
+                self.startSync()
+            }
         }
     }
 
     deinit {
-        stopSync()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -114,23 +119,21 @@ class iCloudSyncService: ObservableObject {
         // Setup file metadata query for shortcuts
         setupFileMetadataQuery()
 
-        // Perform initial sync
-        syncPreferencesToCloud()
-        syncShortcutsToCloud()
-
-        // Pull any existing cloud data
-        pullPreferencesFromCloud()
-        pullShortcutsFromCloud()
-
-        syncState = .synced
-        updateLastSyncDate()
-
-        NotificationCenter.default.post(name: .iCloudSyncStateDidChange, object: self)
+        Task { [weak self] in
+            guard let self else { return }
+            await performFullSync()
+        }
     }
 
     /// Stop syncing
     func stopSync() {
         print("☁️ Stopping iCloud sync...")
+
+        Task { [weak self] in
+            guard let self else { return }
+            await coordinator.cancelAll()
+            await pipeline.cancelPending()
+        }
 
         // Remove key-value observer
         if let observer = keyValueObserver {
@@ -156,23 +159,44 @@ class iCloudSyncService: ObservableObject {
         syncState = .syncing
         print("☁️ Manual sync triggered...")
 
-        // Force synchronize key-value store
-        keyValueStore.synchronize()
+        Task { [weak self] in
+            guard let self else { return }
+            await performFullSync()
+        }
+    }
 
-        // Sync both directions
-        syncPreferencesToCloud()
-        syncShortcutsToCloud()
-        pullPreferencesFromCloud()
-        pullShortcutsFromCloud()
-
-        syncState = .synced
-        updateLastSyncDate()
+    private func enqueueSyncOperation(_ operation: @escaping @Sendable () async -> Void) {
+        Task { [weak self] in
+            guard let self else { return }
+            await pipeline.enqueue {
+                await operation()
+            }
+        }
     }
 
     // MARK: - Preferences Sync
 
     /// Sync local preferences to iCloud
     func syncPreferencesToCloud() {
+        enqueueSyncOperation { [weak self] in
+            guard let self else { return }
+            await MainActor.run {
+                self.syncPreferencesToCloudInternal()
+            }
+        }
+    }
+
+    /// Pull preferences from iCloud
+    func pullPreferencesFromCloud() {
+        enqueueSyncOperation { [weak self] in
+            guard let self else { return }
+            await MainActor.run {
+                self.pullPreferencesFromCloudInternal()
+            }
+        }
+    }
+
+    private func syncPreferencesToCloudInternal() {
         guard syncEnabled, let preferences = preferencesManager?.preferences else { return }
 
         do {
@@ -191,8 +215,7 @@ class iCloudSyncService: ObservableObject {
         }
     }
 
-    /// Pull preferences from iCloud
-    func pullPreferencesFromCloud() {
+    private func pullPreferencesFromCloudInternal() {
         guard syncEnabled else { return }
 
         if let jsonString = keyValueStore.string(forKey: Self.preferencesCloudKey),
@@ -241,6 +264,25 @@ class iCloudSyncService: ObservableObject {
 
     /// Sync local shortcuts to iCloud
     func syncShortcutsToCloud() {
+        enqueueSyncOperation { [weak self] in
+            guard let self else { return }
+            await MainActor.run {
+                self.syncShortcutsToCloudInternal()
+            }
+        }
+    }
+
+    /// Pull shortcuts from iCloud
+    func pullShortcutsFromCloud() {
+        enqueueSyncOperation { [weak self] in
+            guard let self else { return }
+            await MainActor.run {
+                self.pullShortcutsFromCloudInternal()
+            }
+        }
+    }
+
+    private func syncShortcutsToCloudInternal() {
         guard syncEnabled, let shortcutStore = shortcutStore, let cloudURL = iCloudShortcutsURL else { return }
 
         let coordinator = NSFileCoordinator()
@@ -269,8 +311,7 @@ class iCloudSyncService: ObservableObject {
         }
     }
 
-    /// Pull shortcuts from iCloud
-    func pullShortcutsFromCloud() {
+    private func pullShortcutsFromCloudInternal() {
         guard syncEnabled, let shortcutStore = shortcutStore, let cloudURL = iCloudShortcutsURL else { return }
 
         // Check if cloud file exists
@@ -364,7 +405,15 @@ class iCloudSyncService: ObservableObject {
         switch reason {
         case NSUbiquitousKeyValueStoreServerChange, NSUbiquitousKeyValueStoreInitialSyncChange:
             print("☁️ Key-value store changed externally")
-            pullPreferencesFromCloud()
+            Task { [weak self] in
+                guard let self else { return }
+                await coordinator.debounceKeyValueUpdates { [weak self] in
+                    guard let self else { return }
+                    await MainActor.run {
+                        self.pullPreferencesFromCloud()
+                    }
+                }
+            }
         case NSUbiquitousKeyValueStoreQuotaViolationChange:
             print("☁️ iCloud quota exceeded")
             syncState = .error("iCloud quota exceeded")
@@ -402,7 +451,15 @@ class iCloudSyncService: ObservableObject {
         guard syncEnabled else { return }
 
         print("☁️ iCloud shortcuts file changed")
-        pullShortcutsFromCloud()
+        Task { [weak self] in
+            guard let self else { return }
+            await coordinator.debounceMetadataUpdates { [weak self] in
+                guard let self else { return }
+                await MainActor.run {
+                    self.pullShortcutsFromCloud()
+                }
+            }
+        }
     }
 
     @objc private func iCloudAccountDidChange(_ notification: Notification) {
@@ -418,5 +475,25 @@ class iCloudSyncService: ObservableObject {
     private func updateLastSyncDate() {
         lastSyncDate = Date()
         UserDefaults.standard.set(lastSyncDate, forKey: Self.lastSyncDateKey)
+    }
+
+    private func performFullSync() async {
+        await pipeline.enqueue { [weak self] in
+            guard let self else { return }
+
+            await MainActor.run {
+                self.keyValueStore.synchronize()
+                self.syncPreferencesToCloudInternal()
+                self.syncShortcutsToCloudInternal()
+                self.pullPreferencesFromCloudInternal()
+                self.pullShortcutsFromCloudInternal()
+            }
+
+            await MainActor.run {
+                self.syncState = .synced
+                self.updateLastSyncDate()
+                NotificationCenter.default.post(name: .iCloudSyncStateDidChange, object: self)
+            }
+        }
     }
 }

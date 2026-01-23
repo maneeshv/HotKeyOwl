@@ -97,9 +97,11 @@ struct SettingsView: View {
 
     private func saveSettings() {
         // Update preferences
-        preferencesManager.updateGlobalHotkey(workingConfig)
-        preferencesManager.updateHotkeyMode(workingHotkeyMode)
-        preferencesManager.updateAppearanceMode(workingAppearanceMode)
+        preferencesManager.updatePreferences { current in
+            current.globalHotkey = workingConfig
+            current.hotkeyMode = workingHotkeyMode
+            current.appearanceMode = workingAppearanceMode
+        }
 
         // Update hotkey service
         hotkeyService.updateHotkey(workingConfig)

@@ -10,6 +10,8 @@ class HotkeyService: ObservableObject {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var eventTapThread: Thread?
+    private var eventTapRunLoop: CFRunLoop?
 
     // Press state
     private var isCurrentlyPressed = false
@@ -57,53 +59,73 @@ class HotkeyService: ObservableObject {
             return
         }
 
-        // Create event tap
-        let eventMask = (1 << CGEventType.keyDown.rawValue) |
-                       (1 << CGEventType.keyUp.rawValue) |
-                       (1 << CGEventType.flagsChanged.rawValue)
+        let thread = Thread { [weak self] in
+            guard let self else { return }
 
-        // Use passUnretained since HotkeyService is a singleton that lives for app lifetime
-        // Using passRetained would create a memory leak as stopMonitoring() doesn't release it
-        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
+            // Create event tap
+            let eventMask = (1 << CGEventType.keyDown.rawValue) |
+                           (1 << CGEventType.keyUp.rawValue) |
+                           (1 << CGEventType.flagsChanged.rawValue)
 
-        eventTap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: CGEventMask(eventMask),
-            callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
-                guard let refcon = refcon else {
-                    return Unmanaged.passUnretained(event)
-                }
+            // Use passUnretained since HotkeyService is a singleton that lives for app lifetime
+            // Using passRetained would create a memory leak as stopMonitoring() doesn't release it
+            let selfPtr = Unmanaged.passUnretained(self).toOpaque()
 
-                let service = Unmanaged<HotkeyService>.fromOpaque(refcon).takeUnretainedValue()
-                return service.handleEvent(proxy: proxy, type: type, event: event)
-            },
-            userInfo: selfPtr
-        )
+            self.eventTap = CGEvent.tapCreate(
+                tap: .cgSessionEventTap,
+                place: .headInsertEventTap,
+                options: .defaultTap,
+                eventsOfInterest: CGEventMask(eventMask),
+                callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
+                    guard let refcon = refcon else {
+                        return Unmanaged.passUnretained(event)
+                    }
 
-        guard let eventTap = eventTap else {
-            print("❌ Failed to create event tap")
-            return
+                    let service = Unmanaged<HotkeyService>.fromOpaque(refcon).takeUnretainedValue()
+                    return service.handleEvent(proxy: proxy, type: type, event: event)
+                },
+                userInfo: selfPtr
+            )
+
+            guard let eventTap = self.eventTap else {
+                print("❌ Failed to create event tap")
+                return
+            }
+
+            // Add to run loop
+            let currentRunLoop = CFRunLoopGetCurrent()
+            self.eventTapRunLoop = currentRunLoop
+            self.runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
+            CFRunLoopAddSource(currentRunLoop, self.runLoopSource, .commonModes)
+            CGEvent.tapEnable(tap: eventTap, enable: true)
+
+            print("✅ Hotkey monitoring started")
+            CFRunLoopRun()
         }
 
-        // Add to run loop
-        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
-        CGEvent.tapEnable(tap: eventTap, enable: true)
-
-        print("✅ Hotkey monitoring started")
+        eventTapThread = thread
+        thread.name = "HotkeyService.EventTap"
+        thread.start()
     }
 
     func stopMonitoring() {
-        if let runLoopSource = runLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
+        if let runLoopSource = runLoopSource, let runLoop = eventTapRunLoop {
+            CFRunLoopRemoveSource(runLoop, runLoopSource, .commonModes)
             self.runLoopSource = nil
         }
 
         if let eventTap = eventTap {
             CGEvent.tapEnable(tap: eventTap, enable: false)
+            CFMachPortInvalidate(eventTap)
             self.eventTap = nil
+        }
+
+        if eventTapThread != nil {
+            if let runLoop = eventTapRunLoop {
+                CFRunLoopStop(runLoop)
+            }
+            eventTapRunLoop = nil
+            eventTapThread = nil
         }
 
         print("🛑 Hotkey monitoring stopped")
@@ -125,7 +147,6 @@ class HotkeyService: ObservableObject {
                 print("✅ Event tap re-enabled after delay")
             }
 
-            // Post notification on main thread (callback runs on system event thread)
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .eventTapDisabled, object: nil)
             }

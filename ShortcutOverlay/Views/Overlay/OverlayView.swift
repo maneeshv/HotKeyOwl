@@ -5,43 +5,14 @@ struct OverlayView: View {
     let appInfo: AppInfo
     let shortcuts: [ShortcutItem]
 
-    // MARK: - State
-
-    @State private var searchText: String = ""
+    @StateObject private var viewModel: OverlayViewModel
     @FocusState private var isSearchFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
 
-    // MARK: - Computed Properties
-
-    /// Filter shortcuts by description (case-insensitive)
-    private var filteredShortcuts: [ShortcutItem] {
-        guard !searchText.isEmpty else { return shortcuts }
-        return shortcuts.filter { shortcut in
-            shortcut.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-
-    /// Group filtered shortcuts by category for display, preserving array order within each category
-    private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
-        var categoryOrder: [String] = []
-        var grouped: [String: [ShortcutItem]] = [:]
-
-        for shortcut in filteredShortcuts {
-            let category = shortcut.category ?? "General"
-            if grouped[category] == nil {
-                categoryOrder.append(category)
-            }
-            grouped[category, default: []].append(shortcut)
-        }
-
-        // Sort categories alphabetically, but put "General" last
-        categoryOrder.sort { lhs, rhs in
-            if lhs == "General" { return false }
-            if rhs == "General" { return true }
-            return lhs < rhs
-        }
-
-        return categoryOrder.map { (category: $0, shortcuts: grouped[$0]!) }
+    init(appInfo: AppInfo, shortcuts: [ShortcutItem]) {
+        self.appInfo = appInfo
+        self.shortcuts = shortcuts
+        _viewModel = StateObject(wrappedValue: OverlayViewModel(shortcuts: shortcuts))
     }
 
     var body: some View {
@@ -69,9 +40,9 @@ struct OverlayView: View {
                 .padding(.vertical, 12)
 
             // Shortcuts list, empty state, or no results state
-            if shortcuts.isEmpty {
+            if viewModel.isEmpty {
                 emptyState
-            } else if filteredShortcuts.isEmpty {
+            } else if viewModel.hasNoResults {
                 noResultsState
             } else {
                 shortcutsList
@@ -112,10 +83,10 @@ struct OverlayView: View {
 
     private var shortcutsList: some View {
         ScrollView {
-            if groupedShortcuts.count == 1 {
+            if viewModel.groupedShortcuts.count == 1 {
                 // Single category: full-width vertical list
                 LazyVStack(spacing: 8) {
-                    ForEach(groupedShortcuts[0].shortcuts) { shortcut in
+                    ForEach(viewModel.groupedShortcuts[0].shortcuts) { shortcut in
                         ShortcutRowView(shortcut: shortcut)
                     }
                 }
@@ -126,7 +97,7 @@ struct OverlayView: View {
                     GridItem(.flexible(), alignment: .top),
                     GridItem(.flexible(), alignment: .top)
                 ], alignment: .leading, spacing: 16) {
-                    ForEach(groupedShortcuts, id: \.category) { group in
+                    ForEach(viewModel.groupedShortcuts, id: \.category) { group in
                         categorySectionView(category: group.category, shortcuts: group.shortcuts)
                     }
                 }
@@ -209,14 +180,14 @@ struct OverlayView: View {
                     .font(.system(size: 14))
                     .foregroundColor(theme.searchPlaceholder)
 
-                TextField("Search shortcuts...", text: $searchText)
+                TextField("Search shortcuts...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundColor(theme.searchText)
                     .focused($isSearchFocused)
 
-                if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
+                if !viewModel.searchText.isEmpty {
+                    Button(action: { viewModel.searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 14))
                             .foregroundColor(theme.clearButton)

@@ -3,6 +3,8 @@ import AppKit
 
 /// Information about an application
 struct AppInfo: Identifiable {
+    private static let iconCache = NSCache<NSString, NSImage>()
+
     let id: String                     // Bundle identifier
     let bundleIdentifier: String
     let name: String
@@ -31,9 +33,16 @@ struct AppInfo: Identifiable {
 
     /// Get icon for an application by bundle identifier
     static func icon(for bundleIdentifier: String) -> NSImage? {
-        if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
-            return NSWorkspace.shared.icon(forFile: appURL.path)
+        if let cached = iconCache.object(forKey: bundleIdentifier as NSString) {
+            return cached
         }
+
+        if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
+            let icon = NSWorkspace.shared.icon(forFile: appURL.path)
+            iconCache.setObject(icon, forKey: bundleIdentifier as NSString)
+            return icon
+        }
+
         return nil
     }
 }

@@ -7,6 +7,8 @@ class ShortcutStore: ObservableObject {
 
     private let fileManager = FileManager.default
     private let storageURL: URL
+    private let persistence = ShortcutsPersistence()
+    private let saveDebounceInterval: TimeInterval = 0.4
 
     // MARK: - iCloud Sync Integration
 
@@ -28,6 +30,7 @@ class ShortcutStore: ObservableObject {
 
         // Load existing data
         load()
+
     }
 
     // MARK: - Persistence
@@ -39,31 +42,43 @@ class ShortcutStore: ObservableObject {
             return
         }
 
-        do {
-            let data = try Data(contentsOf: storageURL)
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            allShortcuts = try decoder.decode([String: AppShortcuts].self, from: data)
-        } catch {
-            print("Failed to load shortcuts: \(error)")
-            loadDefaults()
+        Task {
+            do {
+                let loaded = try await persistence.load(from: storageURL)
+                await MainActor.run {
+                    self.allShortcuts = loaded
+                }
+            } catch {
+                print("Failed to load shortcuts: \(error)")
+                await MainActor.run {
+                    self.loadDefaults()
+                }
+            }
         }
     }
 
     func save() {
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            let data = try encoder.encode(allShortcuts)
-            try data.write(to: storageURL, options: .atomic)
+        let snapshot = allShortcuts
+        let shouldSync = !isApplyingRemote
 
-            // Trigger iCloud sync if not applying remote changes
-            if !isApplyingRemote {
-                syncService?.syncShortcutsToCloud()
+        Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let outcome = try await persistence.scheduleSave(
+                    snapshot,
+                    to: storageURL,
+                    debounceInterval: saveDebounceInterval
+                )
+
+                if outcome == .saved, shouldSync {
+                    await MainActor.run {
+                        self.syncService?.syncShortcutsToCloud()
+                    }
+                }
+            } catch {
+                print("Failed to save shortcuts: \(error)")
             }
-        } catch {
-            print("Failed to save shortcuts: \(error)")
         }
     }
 
@@ -117,7 +132,7 @@ class ShortcutStore: ObservableObject {
     func addShortcut(_ shortcut: ShortcutItem, for bundleIdentifier: String, appName: String) {
         if var appShortcuts = allShortcuts[bundleIdentifier] {
             appShortcuts.shortcuts.append(shortcut)
-            appShortcuts.lastModified = Date()
+            appShortcuts.touch()
             allShortcuts[bundleIdentifier] = appShortcuts
         } else {
             allShortcuts[bundleIdentifier] = AppShortcuts(
@@ -134,7 +149,7 @@ class ShortcutStore: ObservableObject {
 
         if let index = appShortcuts.shortcuts.firstIndex(where: { $0.id == shortcut.id }) {
             appShortcuts.shortcuts[index] = shortcut
-            appShortcuts.lastModified = Date()
+            appShortcuts.touch()
             allShortcuts[bundleIdentifier] = appShortcuts
             save()
         }
@@ -144,7 +159,7 @@ class ShortcutStore: ObservableObject {
         guard var appShortcuts = allShortcuts[bundleIdentifier] else { return }
 
         appShortcuts.shortcuts.removeAll { $0.id == id }
-        appShortcuts.lastModified = Date()
+        appShortcuts.touch()
         allShortcuts[bundleIdentifier] = appShortcuts
         save()
     }
