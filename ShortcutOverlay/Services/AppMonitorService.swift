@@ -7,7 +7,7 @@ class AppMonitorService: ObservableObject {
     @Published private(set) var currentApp: AppInfo?
 
     private let workspace: NSWorkspace
-    private var cachedRunningApps: [AppInfo] = []
+    @Published private(set) var cachedRunningApps: [AppInfo] = []
 
     init() {
         workspace = NSWorkspace.shared
@@ -82,10 +82,4 @@ class AppMonitorService: ObservableObject {
         stopMonitoring()
     }
 
-    // MARK: - Utility
-
-    /// Get all running applications (filtered to regular apps)
-    var runningApps: [AppInfo] {
-        cachedRunningApps
-    }
 }

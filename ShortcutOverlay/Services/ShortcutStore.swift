@@ -101,7 +101,9 @@ class ShortcutStore: ObservableObject {
 
     /// Reload shortcuts from cloud
     func reloadFromCloud() {
-        syncService?.pullShortcutsFromCloud()
+        Task { @MainActor in
+            syncService?.pullShortcutsFromCloud()
+        }
     }
 
     // MARK: - CRUD Operations

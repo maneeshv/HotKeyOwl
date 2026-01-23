@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 /// Main application delegate coordinating all services and UI
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Properties
@@ -151,7 +152,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let chooseAppItem = NSMenuItem(title: "Choose App…", action: nil, keyEquivalent: "")
         let chooseAppMenu = NSMenu()
 
-        let runningApps = appMonitorService.runningApps
+        let runningApps = appMonitorService.cachedRunningApps
         if !runningApps.isEmpty {
             for app in runningApps.prefix(15) {  // Limit to 15 apps
                 let item = NSMenuItem(

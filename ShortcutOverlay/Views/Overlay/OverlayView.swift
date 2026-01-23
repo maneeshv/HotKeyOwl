@@ -5,14 +5,23 @@ struct OverlayView: View {
     let appInfo: AppInfo
     let shortcuts: [ShortcutItem]
 
-    @StateObject private var viewModel: OverlayViewModel
+    @State private var searchText: String = ""
     @FocusState private var isSearchFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
 
-    init(appInfo: AppInfo, shortcuts: [ShortcutItem]) {
-        self.appInfo = appInfo
-        self.shortcuts = shortcuts
-        _viewModel = StateObject(wrappedValue: OverlayViewModel(shortcuts: shortcuts))
+    private var filteredShortcuts: [ShortcutItem] {
+        guard !searchText.isEmpty else { return shortcuts }
+        return shortcuts.filter { shortcut in
+            shortcut.description.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    private var groupedShortcuts: [(category: String, shortcuts: [ShortcutItem])] {
+        ShortcutGrouping.group(filteredShortcuts)
+    }
+
+    private var hasNoResults: Bool {
+        !searchText.isEmpty && filteredShortcuts.isEmpty
     }
 
     var body: some View {
@@ -40,9 +49,9 @@ struct OverlayView: View {
                 .padding(.vertical, 12)
 
             // Shortcuts list, empty state, or no results state
-            if viewModel.isEmpty {
+            if shortcuts.isEmpty {
                 emptyState
-            } else if viewModel.hasNoResults {
+            } else if hasNoResults {
                 noResultsState
             } else {
                 shortcutsList
@@ -83,10 +92,10 @@ struct OverlayView: View {
 
     private var shortcutsList: some View {
         ScrollView {
-            if viewModel.groupedShortcuts.count == 1 {
+            if groupedShortcuts.count == 1 {
                 // Single category: full-width vertical list
                 LazyVStack(spacing: 8) {
-                    ForEach(viewModel.groupedShortcuts[0].shortcuts) { shortcut in
+                    ForEach(groupedShortcuts[0].shortcuts) { shortcut in
                         ShortcutRowView(shortcut: shortcut)
                     }
                 }
@@ -97,7 +106,7 @@ struct OverlayView: View {
                     GridItem(.flexible(), alignment: .top),
                     GridItem(.flexible(), alignment: .top)
                 ], alignment: .leading, spacing: 16) {
-                    ForEach(viewModel.groupedShortcuts, id: \.category) { group in
+                    ForEach(groupedShortcuts, id: \.category) { group in
                         categorySectionView(category: group.category, shortcuts: group.shortcuts)
                     }
                 }
@@ -180,14 +189,14 @@ struct OverlayView: View {
                     .font(.system(size: 14))
                     .foregroundColor(theme.searchPlaceholder)
 
-                TextField("Search shortcuts...", text: $viewModel.searchText)
+                TextField("Search shortcuts...", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundColor(theme.searchText)
                     .focused($isSearchFocused)
 
-                if !viewModel.searchText.isEmpty {
-                    Button(action: { viewModel.searchText = "" }) {
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 14))
                             .foregroundColor(theme.clearButton)

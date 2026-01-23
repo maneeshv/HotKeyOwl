@@ -102,7 +102,7 @@ final class EditorViewModel: ObservableObject {
             return
         }
 
-        if let app = appMonitorService.runningApps.first(where: { $0.bundleIdentifier == bundleId }) {
+        if let app = appMonitorService.cachedRunningApps.first(where: { $0.bundleIdentifier == bundleId }) {
             selectedApp = app
         } else if let appShortcuts = shortcutStore.getAppShortcuts(for: bundleId) {
             selectedApp = AppInfo(

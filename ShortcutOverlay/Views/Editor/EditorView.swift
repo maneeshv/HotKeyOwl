@@ -82,7 +82,7 @@ struct EditorView: View {
             )) {
                 Text("Choose an app...").tag("")
 
-                ForEach(appMonitorService.runningApps) { app in
+                ForEach(appMonitorService.cachedRunningApps) { app in
                     Text(app.name).tag(app.bundleIdentifier)
                 }
             }
