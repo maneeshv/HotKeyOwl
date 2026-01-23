@@ -323,7 +323,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         editorWindow = window
-        observeWindowClose(window) { [weak self] in self?.editorWindow = nil }
+        observeWindowClose(window) { [weak self] in
+            self?.editorWindow = nil
+            self?.updateActivationPolicyForWindows()
+        }
+        updateActivationPolicyForWindows()
         showWindow(window)
     }
 
@@ -351,11 +355,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         settingsWindow = window
-        observeWindowClose(window) { [weak self] in self?.settingsWindow = nil }
+        observeWindowClose(window) { [weak self] in
+            self?.settingsWindow = nil
+            self?.updateActivationPolicyForWindows()
+        }
+        updateActivationPolicyForWindows()
         showWindow(window)
     }
 
     // MARK: - Window Helpers
+
+    private func updateActivationPolicyForWindows() {
+        let hasAppWindow = editorWindow != nil || settingsWindow != nil
+        let desiredPolicy: NSApplication.ActivationPolicy = hasAppWindow ? .regular : .accessory
+
+        guard NSApp.activationPolicy() != desiredPolicy else { return }
+
+        NSApp.setActivationPolicy(desiredPolicy)
+        if desiredPolicy == .regular, let appIcon = NSImage(named: "AppIcon") {
+            NSApp.applicationIconImage = appIcon
+        }
+    }
 
     private func bringWindowToFront(_ window: NSWindow?) -> Bool {
         guard let window = window else { return false }
