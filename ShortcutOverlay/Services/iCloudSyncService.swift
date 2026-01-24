@@ -266,9 +266,7 @@ class iCloudSyncService: ObservableObject {
     func syncShortcutsToCloud() {
         enqueueSyncOperation { [weak self] in
             guard let self else { return }
-            await MainActor.run {
-                self.syncShortcutsToCloudInternal()
-            }
+            await self.syncShortcutsToCloudInternal()
         }
     }
 
@@ -276,42 +274,46 @@ class iCloudSyncService: ObservableObject {
     func pullShortcutsFromCloud() {
         enqueueSyncOperation { [weak self] in
             guard let self else { return }
-            await MainActor.run {
-                self.pullShortcutsFromCloudInternal()
-            }
+            await self.pullShortcutsFromCloudInternal()
         }
     }
 
-    private func syncShortcutsToCloudInternal() {
+    private func syncShortcutsToCloudInternal() async {
         guard syncEnabled, let shortcutStore = shortcutStore, let cloudURL = iCloudShortcutsURL else { return }
 
-        let coordinator = NSFileCoordinator()
-        var error: NSError?
+        // Capture data snapshot on main actor (fast)
+        let allShortcuts = shortcutStore.getAllShortcuts()
 
-        coordinator.coordinate(writingItemAt: cloudURL, options: .forReplacing, error: &error) { url in
-            do {
-                let allShortcuts = shortcutStore.getAllShortcuts()
-                let encoder = JSONEncoder()
-                encoder.dateEncodingStrategy = .iso8601
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(allShortcuts)
-                try data.write(to: url, options: .atomic)
-                print("☁️ Shortcuts synced to iCloud: \(url.path)")
-            } catch {
-                print("☁️ Error syncing shortcuts to cloud: \(error)")
-                DispatchQueue.main.async {
-                    self.syncState = .error("Failed to sync shortcuts")
+        // Move heavy work to background and await completion
+        do {
+            try await Task.detached(priority: .utility) {
+                let coordinator = NSFileCoordinator()
+                var coordinatorError: NSError?
+
+                coordinator.coordinate(writingItemAt: cloudURL, options: .forReplacing, error: &coordinatorError) { url in
+                    do {
+                        let encoder = JSONEncoder()
+                        encoder.dateEncodingStrategy = .iso8601
+                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                        let data = try encoder.encode(allShortcuts)
+                        try data.write(to: url, options: .atomic)
+                        print("☁️ Shortcuts synced to iCloud: \(url.path)")
+                    } catch {
+                        print("☁️ Error syncing shortcuts to cloud: \(error)")
+                    }
                 }
-            }
-        }
 
-        if let error = error {
+                if let error = coordinatorError {
+                    throw error
+                }
+            }.value
+        } catch {
             print("☁️ File coordination error: \(error)")
             syncState = .error("File coordination failed")
         }
     }
 
-    private func pullShortcutsFromCloudInternal() {
+    private func pullShortcutsFromCloudInternal() async {
         guard syncEnabled, let shortcutStore = shortcutStore, let cloudURL = iCloudShortcutsURL else { return }
 
         // Check if cloud file exists
@@ -320,39 +322,46 @@ class iCloudSyncService: ObservableObject {
             return
         }
 
-        let coordinator = NSFileCoordinator()
-        var error: NSError?
+        // Capture local state snapshot on main actor (fast)
+        let localShortcuts = shortcutStore.getAllShortcuts()
 
-        coordinator.coordinate(readingItemAt: cloudURL, options: [], error: &error) { url in
-            do {
-                let data = try Data(contentsOf: url)
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                let remoteShortcuts = try decoder.decode([String: AppShortcuts].self, from: data)
+        // Read and decode on background, return merged result
+        let merged: [String: AppShortcuts]? = await Task.detached(priority: .utility) {
+            let coordinator = NSFileCoordinator()
+            var coordinatorError: NSError?
+            var result: [String: AppShortcuts]?
 
-                // Merge using last-write-wins per app
-                let localShortcuts = shortcutStore.getAllShortcuts()
-                let merged = mergeShortcuts(local: localShortcuts, remote: remoteShortcuts)
+            coordinator.coordinate(readingItemAt: cloudURL, options: [], error: &coordinatorError) { url in
+                do {
+                    let data = try Data(contentsOf: url)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    let remoteShortcuts = try decoder.decode([String: AppShortcuts].self, from: data)
 
-                // Apply merged shortcuts
-                shortcutStore.replaceAllShortcuts(merged)
-                print("☁️ Shortcuts pulled and merged from iCloud")
-
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .shortcutsDidChangeRemotely, object: nil)
+                    // Merge logic (pure computation, fine on background)
+                    result = Self.mergeShortcuts(local: localShortcuts, remote: remoteShortcuts)
+                } catch {
+                    print("☁️ Error pulling shortcuts from cloud: \(error)")
                 }
-            } catch {
-                print("☁️ Error pulling shortcuts from cloud: \(error)")
             }
-        }
 
-        if let error = error {
-            print("☁️ File coordination error: \(error)")
+            if let error = coordinatorError {
+                print("☁️ File coordination error: \(error)")
+            }
+
+            return result
+        }.value
+
+        // Apply merged result on main actor
+        if let merged {
+            shortcutStore.replaceAllShortcuts(merged)
+            print("☁️ Shortcuts pulled and merged from iCloud")
+            NotificationCenter.default.post(name: .shortcutsDidChangeRemotely, object: nil)
         }
     }
 
     /// Merge shortcuts using last-write-wins per app
-    private func mergeShortcuts(local: [String: AppShortcuts], remote: [String: AppShortcuts]) -> [String: AppShortcuts] {
+    nonisolated private static func mergeShortcuts(local: [String: AppShortcuts], remote: [String: AppShortcuts]) -> [String: AppShortcuts] {
         var merged = local
 
         for (bundleId, remoteApp) in remote {
@@ -481,13 +490,16 @@ class iCloudSyncService: ObservableObject {
         await pipeline.enqueue { [weak self] in
             guard let self else { return }
 
+            // Key-value store sync stays on main (already lightweight)
             await MainActor.run {
                 self.keyValueStore.synchronize()
                 self.syncPreferencesToCloudInternal()
-                self.syncShortcutsToCloudInternal()
                 self.pullPreferencesFromCloudInternal()
-                self.pullShortcutsFromCloudInternal()
             }
+
+            // File I/O now runs on background internally
+            await self.syncShortcutsToCloudInternal()
+            await self.pullShortcutsFromCloudInternal()
 
             await MainActor.run {
                 self.syncState = .synced
