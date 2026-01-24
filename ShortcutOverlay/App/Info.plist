@@ -23,7 +23,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 DocketAI. All rights reserved.</string>
+	<string>Copyright © 2026 Maneesh Shaji. All rights reserved.</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>HotKeyOwl needs permission to monitor keyboard input to detect the global hotkey for showing the overlay.</string>
 	<key>NSPrincipalClass</key>
