@@ -23,13 +23,13 @@ open ~/Library/Developer/Xcode/DerivedData/ShortcutOverlay-*/Build/Products/Debu
 
 ## Architecture Overview
 
-ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the active application via a press-and-hold overlay. It uses SwiftUI + AppKit hybrid with MVVM pattern.
+ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the active application via a toggle-activated overlay. It uses SwiftUI + AppKit hybrid with MVVM pattern.
 
 ### Core Services (ShortcutOverlay/Services/)
 
-- **HotkeyService**: Global keyboard monitoring via `CGEventTap`. Detects press-and-hold of configurable hotkey, posts `.showOverlay`/`.hideOverlay` notifications
+- **HotkeyService**: Global keyboard monitoring via Carbon Hot Key API. Detects toggle of configurable hotkey (press to show, press again to hide), posts `.showOverlay`/`.hideOverlay` notifications
 - **AppMonitorService**: Detects frontmost app using `NSWorkspace` notifications
-- **ShortcutStore**: CRUD operations for shortcuts, persists to `~/Library/Application Support/ShortcutOverlay/shortcuts.json`
+- **ShortcutStore**: CRUD operations for shortcuts, persists to `~/Library/Application Support/HotKeyOwl/shortcuts.json`
 - **PreferencesManager**: Manages `AppPreferences` (global hotkey config), persists to UserDefaults. **Note**: The `save()` method must not directly modify `@Published preferences` to avoid infinite recursion via `didSet`
 - **iCloudSyncService**: Syncs preferences via `NSUbiquitousKeyValueStore` and shortcuts via iCloud Documents. Uses last-write-wins based on `lastModified` timestamps
 - **ConfigurationManager**: Handles import/export of shortcuts as JSON files
@@ -42,10 +42,10 @@ ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the
 
 ### Data Flow
 
-1. User presses hotkey → `HotkeyService` detects via `CGEventTap` → posts `.showOverlay`
+1. User presses hotkey → `HotkeyService` detects via Carbon Hot Key API → posts `.showOverlay`
 2. `AppDelegate` receives notification → queries `AppMonitorService` for current app → queries `ShortcutStore` for shortcuts
 3. `OverlayWindow` displays `OverlayView` with shortcuts
-4. User releases hotkey → `HotkeyService` posts `.hideOverlay` → overlay dismissed
+4. User presses hotkey again → `HotkeyService` posts `.hideOverlay` → overlay dismissed
 
 ### Models
 
@@ -56,11 +56,11 @@ ShortcutOverlay is a macOS menu bar app that displays keyboard shortcuts for the
 ## Requirements
 
 - macOS 13.0+ (Ventura)
-- Accessibility permission required for `CGEventTap` (global hotkey monitoring)
+- Accessibility permission required for Carbon Hot Key API (global hotkey monitoring)
 - iCloud entitlement for sync features
 
 ## Data Storage
 
-- Shortcuts: `~/Library/Application Support/ShortcutOverlay/shortcuts.json`
+- Shortcuts: `~/Library/Application Support/HotKeyOwl/shortcuts.json`
 - Preferences: UserDefaults (`appPreferences` key)
 - iCloud shortcuts: `<iCloud Container>/Documents/shortcuts.json`

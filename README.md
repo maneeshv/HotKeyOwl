@@ -1,6 +1,6 @@
 # ShortcutOverlay
 
-A macOS menu bar utility that displays keyboard shortcuts for the currently active application via a beautiful, press-and-hold overlay.
+A macOS menu bar utility that displays keyboard shortcuts for the currently active application via a beautiful, toggle-activated overlay.
 
 <img src="https://img.shields.io/badge/macOS-13.0+-blue.svg" alt="macOS 13.0+">
 <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift 5.9">
@@ -20,8 +20,8 @@ A macOS menu bar utility that displays keyboard shortcuts for the currently acti
 
 ## Demo
 
-**Press and Hold Your Hotkey** (default: `⌃⌥⌘0`): Overlay appears showing shortcuts for the current app
-**Release**: Overlay disappears instantly
+**Press Your Hotkey** (default: `⌃⌥⌘0`): Overlay appears showing shortcuts for the current app
+**Press Again**: Overlay disappears instantly
 
 The overlay stays on top, centered, and doesn't steal focus from your work.
 
@@ -82,15 +82,15 @@ ShortcutOverlay requires **Accessibility** permission to monitor the global hotk
 
 ### Why This Permission?
 
-ShortcutOverlay uses macOS's `CGEventTap` API to detect when you press and hold your configured hotkey, regardless of which app is active. This requires Accessibility permission for security reasons.
+ShortcutOverlay uses macOS's Carbon Hot Key API to detect when you press your configured hotkey, regardless of which app is active. This requires Accessibility permission for security reasons.
 
 ## Usage
 
 ### Show Shortcuts Overlay
 
-1. **Press and hold** your configured hotkey (default: `⌃⌥⌘0`)
+1. **Press** your configured hotkey (default: `⌃⌥⌘0`)
 2. The overlay appears showing shortcuts for the active application
-3. **Release** the keys to hide the overlay
+3. **Press the hotkey again** to hide the overlay
 
 ### Configure Custom Hotkey
 
@@ -180,12 +180,12 @@ You can customize or delete these defaults anytime.
 - **Language**: Swift 5.9+
 - **UI Framework**: SwiftUI + AppKit (hybrid)
 - **Pattern**: MVVM with Services Layer
-- **Persistence**: JSON file in `~/Library/Application Support/ShortcutOverlay/`
+- **Persistence**: JSON file in `~/Library/Application Support/HotKeyOwl/`
 
 ### Key Components
 
 **Services Layer**:
-- `HotkeyService`: Global keyboard monitoring via `CGEventTap`
+- `HotkeyService`: Global keyboard monitoring via Carbon Hot Key API
 - `AppMonitorService`: Detects frontmost app using `NSWorkspace`
 - `ShortcutStore`: JSON persistence and CRUD operations
 - `PermissionManager`: Accessibility permission checks
@@ -264,18 +264,18 @@ xcodegen generate
 
 ## Technical Details
 
-### Press-and-Hold Detection
+### Toggle-Based Hotkey Detection
 
-ShortcutOverlay uses a timer-based approach:
+ShortcutOverlay uses the Carbon Hot Key API for reliable global hotkey detection:
 
-1. On `keyDown` event for "0" with ⌘⌃ modifiers → start 500ms timer
-2. If timer completes → post `.showOverlay` notification
-3. On `keyUp` or modifier release → cancel timer, post `.hideOverlay` notification
+1. Registers a global hotkey with the system
+2. On hotkey press → toggle overlay state (show if hidden, hide if shown)
+3. Includes 0.3s debounce to prevent rapid toggling
 
 This ensures:
-- ✅ Press-and-hold triggers the overlay
-- ✅ Quick taps don't trigger
-- ✅ Modifier release immediately hides
+- ✅ Single press toggles the overlay
+- ✅ Works reliably across all applications
+- ✅ No interference with normal typing
 
 ### Overlay Window
 
@@ -289,7 +289,7 @@ The overlay is an `NSPanel` with:
 
 Shortcuts are stored in:
 ```
-~/Library/Application Support/ShortcutOverlay/shortcuts.json
+~/Library/Application Support/HotKeyOwl/shortcuts.json
 ```
 
 Format:
@@ -343,14 +343,14 @@ If you see "Event tap disabled" in logs:
 
 ### Keyboard Not Responding
 
-- Make sure you're holding **all three keys**: ⌘ (Command) + ⌃ (Control) + 0
-- Try pressing ⌘ and ⌃ first, then 0
-- Hold for at least 500ms
+- Make sure you're pressing your configured hotkey (default: ⌃⌥⌘0)
+- Check that the hotkey hasn't been changed in Settings
+- Verify Accessibility permission is granted
 
 ## FAQ
 
 **Q: Can I change the global hotkey?**
-A: Currently, the hotkey is hardcoded to ⌘⌃0. Custom hotkeys may be added in a future version.
+A: Yes! Go to Settings and click the hotkey field to record a new combination.
 
 **Q: Does this work with non-standard apps?**
 A: Yes! It works with any app that has a bundle identifier. You can add shortcuts for any application.
@@ -362,20 +362,20 @@ A: Shortcuts are stored in `~/Library/Application Support/ShortcutOverlay/shortc
 A: There's a brief delay (~100ms) in detecting app switches. Try holding the hotkey slightly longer.
 
 **Q: Is this safe? Does it log keystrokes?**
-A: Yes, it's completely safe. The app only monitors the specific hotkey (⌘⌃0) and doesn't log any other keystrokes.
+A: Yes, it's completely safe. The app only monitors your configured hotkey and doesn't log any other keystrokes.
 
 ## Roadmap
 
 Potential future features:
 
-- [ ] Custom hotkey configuration
-- [ ] Keyboard shortcut recorder (record shortcuts live)
+- [x] Custom hotkey configuration
+- [x] Keyboard shortcut recorder (record shortcuts live)
+- [x] iCloud sync
+- [x] Dark/light theme toggle
+- [x] Shortcut categories
+- [x] Search/filter shortcuts
 - [ ] Import shortcuts from app documentation
-- [ ] iCloud sync
-- [ ] Dark/light theme toggle
 - [ ] Multiple overlay layouts
-- [ ] Shortcut categories
-- [ ] Search/filter shortcuts
 - [ ] Export to PDF/Markdown
 
 ## Contributing
