@@ -122,29 +122,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Info item (use dynamic hotkey)
         let hotkeyText = hotkeyService.hotkeyDescription
         let infoItem = NSMenuItem(
-            title: "Hold \(hotkeyText) to Show Shortcuts",
+            title: "Press \(hotkeyText) to Toggle Shortcuts",
             action: nil,
             keyEquivalent: ""
         )
         infoItem.isEnabled = false
         menu.addItem(infoItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        // Permission status
-        let permissionStatus = PermissionManager.shared.checkAccessibilityPermission() ? "✓ Granted" : "✗ Not Granted"
-        let permissionItem = NSMenuItem(
-            title: "Accessibility: \(permissionStatus)",
-            action: #selector(requestPermission),
-            keyEquivalent: ""
-        )
-        if !PermissionManager.shared.checkAccessibilityPermission() {
-            permissionItem.attributedTitle = NSAttributedString(
-                string: "Accessibility: \(permissionStatus)",
-                attributes: [.foregroundColor: NSColor.systemRed]
-            )
-        }
-        menu.addItem(permissionItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -291,10 +274,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: - Menu Actions
-
-    @objc private func requestPermission() {
-        PermissionManager.shared.showPermissionAlert()
-    }
 
     @objc private func selectApp(_ sender: NSMenuItem) {
         guard let bundleId = sender.representedObject as? String else { return }

@@ -2,30 +2,40 @@ import Foundation
 import Combine
 import Carbon
 
-/// Manages global keyboard monitoring for the hotkey
+/// Global callback function for Carbon Hot Key events
+private func hotkeyCallback(
+    nextHandler: EventHandlerCallRef?,
+    event: EventRef?,
+    userData: UnsafeMutableRawPointer?
+) -> OSStatus {
+    guard let userData = userData else {
+        return OSStatus(eventNotHandledErr)
+    }
+
+    let service = Unmanaged<HotkeyService>.fromOpaque(userData).takeUnretainedValue()
+    service.handleHotkeyPressed()
+
+    return noErr
+}
+
+/// Manages global keyboard monitoring for the hotkey using Carbon Hot Key API
 class HotkeyService: ObservableObject {
     // MARK: - Properties
 
-    @Published private(set) var isHotkeyHeld = false
+    @Published private(set) var isOverlayShown = false
 
-    private var eventTap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
-    private var eventTapThread: Thread?
-    private var eventTapRunLoop: CFRunLoop?
-
-    // Press state
-    private var isCurrentlyPressed = false
-    private var overlayShown = false
+    // Carbon Hot Key references
+    private var hotkeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
+    private static let hotkeySignature = OSType(0x484B5759)  // "HKWY"
+    private static let hotkeyID: UInt32 = 1
 
     // Target hotkey (configurable)
     private var targetKeyCode: CGKeyCode
-    private var requiredModifiers: CGEventFlags
+    private var targetModifiers: CGEventFlags
     private let preferencesManager: PreferencesManager
 
-    // Hotkey mode
-    private var hotkeyMode: HotkeyMode
-
-    // Debouncing to prevent rapid triggers that can freeze the system
+    // Debouncing to prevent rapid triggers
     private var lastTriggerTime: Date = .distantPast
     private let minimumTriggerInterval: TimeInterval = 0.3
 
@@ -35,8 +45,7 @@ class HotkeyService: ObservableObject {
         self.preferencesManager = preferencesManager
         let hotkey = preferencesManager.globalHotkey
         self.targetKeyCode = hotkey.cgKeyCode
-        self.requiredModifiers = hotkey.cgModifiers
-        self.hotkeyMode = preferencesManager.hotkeyMode
+        self.targetModifiers = hotkey.cgModifiers
     }
 
     deinit {
@@ -46,232 +55,154 @@ class HotkeyService: ObservableObject {
     // MARK: - Monitoring Control
 
     func startMonitoring() {
-        // Guard against repeated calls - clean up existing tap first
-        if eventTap != nil {
-            print("⚠️ Event tap already exists, stopping before restart")
+        // Guard against repeated calls - clean up existing registration first
+        if hotkeyRef != nil {
+            print("⚠️ Hot key already registered, stopping before restart")
             stopMonitoring()
         }
 
-        // Check accessibility permission
-        guard PermissionManager.shared.checkAccessibilityPermission() else {
-            print("⚠️ Accessibility permission not granted. Cannot monitor keyboard.")
-            PermissionManager.shared.showPermissionAlert()
+        // Install event handler for hotkey events
+        var eventType = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyPressed)
+        )
+
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
+
+        let installStatus = InstallEventHandler(
+            GetEventDispatcherTarget(),
+            hotkeyCallback,
+            1,
+            &eventType,
+            selfPtr,
+            &eventHandlerRef
+        )
+
+        guard installStatus == noErr else {
+            print("❌ Failed to install event handler: \(installStatus)")
             return
         }
 
-        let thread = Thread { [weak self] in
-            guard let self else { return }
+        // Register the hotkey
+        registerHotkey()
 
-            // Create event tap
-            let eventMask = (1 << CGEventType.keyDown.rawValue) |
-                           (1 << CGEventType.keyUp.rawValue) |
-                           (1 << CGEventType.flagsChanged.rawValue)
-
-            // Use passUnretained since HotkeyService is a singleton that lives for app lifetime
-            // Using passRetained would create a memory leak as stopMonitoring() doesn't release it
-            let selfPtr = Unmanaged.passUnretained(self).toOpaque()
-
-            self.eventTap = CGEvent.tapCreate(
-                tap: .cgSessionEventTap,
-                place: .headInsertEventTap,
-                options: .defaultTap,
-                eventsOfInterest: CGEventMask(eventMask),
-                callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
-                    guard let refcon = refcon else {
-                        return Unmanaged.passUnretained(event)
-                    }
-
-                    let service = Unmanaged<HotkeyService>.fromOpaque(refcon).takeUnretainedValue()
-                    return service.handleEvent(proxy: proxy, type: type, event: event)
-                },
-                userInfo: selfPtr
-            )
-
-            guard let eventTap = self.eventTap else {
-                print("❌ Failed to create event tap")
-                return
-            }
-
-            // Add to run loop
-            let currentRunLoop = CFRunLoopGetCurrent()
-            self.eventTapRunLoop = currentRunLoop
-            self.runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
-            CFRunLoopAddSource(currentRunLoop, self.runLoopSource, .commonModes)
-            CGEvent.tapEnable(tap: eventTap, enable: true)
-
-            print("✅ Hotkey monitoring started")
-            CFRunLoopRun()
-        }
-
-        eventTapThread = thread
-        thread.name = "HotkeyService.EventTap"
-        thread.start()
+        print("✅ Hotkey monitoring started (Carbon Hot Key API)")
     }
 
     func stopMonitoring() {
-        if let runLoopSource = runLoopSource, let runLoop = eventTapRunLoop {
-            CFRunLoopRemoveSource(runLoop, runLoopSource, .commonModes)
-            self.runLoopSource = nil
+        // Unregister hotkey
+        if let hotkeyRef = hotkeyRef {
+            UnregisterEventHotKey(hotkeyRef)
+            self.hotkeyRef = nil
         }
 
-        if let eventTap = eventTap {
-            CGEvent.tapEnable(tap: eventTap, enable: false)
-            CFMachPortInvalidate(eventTap)
-            self.eventTap = nil
-        }
-
-        if eventTapThread != nil {
-            if let runLoop = eventTapRunLoop {
-                CFRunLoopStop(runLoop)
-            }
-            eventTapRunLoop = nil
-            eventTapThread = nil
+        // Remove event handler
+        if let eventHandlerRef = eventHandlerRef {
+            RemoveEventHandler(eventHandlerRef)
+            self.eventHandlerRef = nil
         }
 
         print("🛑 Hotkey monitoring stopped")
     }
 
+    private func registerHotkey() {
+        // Unregister existing hotkey if any
+        if let existingRef = hotkeyRef {
+            UnregisterEventHotKey(existingRef)
+            hotkeyRef = nil
+        }
+
+        var hotkeyID = EventHotKeyID(
+            signature: Self.hotkeySignature,
+            id: Self.hotkeyID
+        )
+
+        let carbonMods = carbonModifiers(from: targetModifiers)
+
+        let registerStatus = RegisterEventHotKey(
+            UInt32(targetKeyCode),
+            carbonMods,
+            hotkeyID,
+            GetEventDispatcherTarget(),
+            0,
+            &hotkeyRef
+        )
+
+        if registerStatus == noErr {
+            print("✅ Registered hotkey: \(preferencesManager.globalHotkey.displayString)")
+        } else {
+            print("❌ Failed to register hotkey: \(registerStatus)")
+        }
+    }
+
+    // MARK: - Modifier Conversion
+
+    private func carbonModifiers(from cgFlags: CGEventFlags) -> UInt32 {
+        var carbonMods: UInt32 = 0
+
+        if cgFlags.contains(.maskCommand) {
+            carbonMods |= UInt32(cmdKey)
+        }
+        if cgFlags.contains(.maskAlternate) {
+            carbonMods |= UInt32(optionKey)
+        }
+        if cgFlags.contains(.maskControl) {
+            carbonMods |= UInt32(controlKey)
+        }
+        if cgFlags.contains(.maskShift) {
+            carbonMods |= UInt32(shiftKey)
+        }
+
+        return carbonMods
+    }
+
     // MARK: - Event Handling
 
-    private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        // Handle tap being disabled
-        // IMPORTANT: Don't re-enable immediately in the callback - this can cause an infinite loop
-        // where the system disables the tap, we re-enable, system disables again, etc.
-        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            print("⚠️ Event tap disabled, will re-enable after delay...")
-
-            // Defer re-enabling to break potential infinite loop
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                guard let self = self, let eventTap = self.eventTap else { return }
-                CGEvent.tapEnable(tap: eventTap, enable: true)
-                print("✅ Event tap re-enabled after delay")
-            }
-
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .eventTapDisabled, object: nil)
-            }
-
-            return Unmanaged.passUnretained(event)
-        }
-
-        // Process keyboard events
-        if type == .keyDown {
-            handleKeyDown(event)
-        } else if type == .keyUp {
-            handleKeyUp(event)
-        } else if type == .flagsChanged {
-            handleFlagsChanged(event)
-        }
-
-        // Pass event through to system (use passUnretained since we didn't create this event)
-        return Unmanaged.passUnretained(event)
-    }
-
-    private func handleKeyDown(_ event: CGEvent) {
-        let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
-        let flags = event.flags
-
-        // Handle Escape key in toggle mode to hide overlay
-        if hotkeyMode == .toggle && keyCode == 53 && overlayShown {
-            hideOverlay()
+    /// Called when the hotkey is pressed - toggles overlay visibility
+    func handleHotkeyPressed() {
+        // Debounce rapid triggers
+        let now = Date()
+        guard now.timeIntervalSince(lastTriggerTime) >= minimumTriggerInterval else {
+            print("⏳ Debouncing hotkey trigger")
             return
         }
+        lastTriggerTime = now
 
-        // Check if it's our target key with correct modifiers
-        guard keyCode == targetKeyCode else { return }
-        guard flags.isSuperset(of: requiredModifiers) else { return }
-
-        // Ignore if already processing (for hold mode)
-        guard !isCurrentlyPressed else { return }
-
-        isCurrentlyPressed = true
-
-        switch hotkeyMode {
-        case .hold:
-            // Show overlay immediately on press
-            triggerOverlay()
-        case .toggle:
-            // Toggle overlay state
-            if overlayShown {
-                hideOverlay()
-            } else {
-                triggerOverlay()
-            }
-        }
-    }
-
-    private func handleKeyUp(_ event: CGEvent) {
-        let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
-
-        // Check if it's our target key
-        guard keyCode == targetKeyCode else { return }
-        guard isCurrentlyPressed else { return }
-
-        // Key released
-        isCurrentlyPressed = false
-
-        // In hold mode, hide overlay on key release
-        // In toggle mode, do nothing (overlay stays until toggled or Esc)
-        if hotkeyMode == .hold && overlayShown {
+        // Toggle overlay state
+        if isOverlayShown {
             hideOverlay()
-        }
-    }
-
-    private func handleFlagsChanged(_ event: CGEvent) {
-        let flags = event.flags
-
-        // In hold mode: if modifiers are released while overlay is shown, hide it
-        // In toggle mode: do nothing (user can release modifiers freely)
-        if hotkeyMode == .hold && overlayShown {
-            let hasRequiredModifiers = flags.isSuperset(of: requiredModifiers)
-            if !hasRequiredModifiers {
-                hideOverlay()
-            }
+        } else {
+            showOverlay()
         }
     }
 
     // MARK: - Overlay Control
 
-    private func triggerOverlay() {
-        guard !overlayShown else { return }
+    private func showOverlay() {
+        guard !isOverlayShown else { return }
 
-        // Debounce rapid triggers to prevent system freeze from event queue backup
-        let now = Date()
-        guard now.timeIntervalSince(lastTriggerTime) >= minimumTriggerInterval else {
-            print("⏳ Debouncing overlay trigger")
-            return
-        }
-        lastTriggerTime = now
-
-        overlayShown = true
-        isHotkeyHeld = true
+        isOverlayShown = true
 
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .showOverlay, object: nil)
         }
 
-        print("🎯 Hotkey held - showing overlay")
+        print("🎯 Hotkey pressed - showing overlay")
     }
 
     private func hideOverlay() {
-        guard overlayShown else { return }
+        guard isOverlayShown else { return }
 
-        overlayShown = false
-        isHotkeyHeld = false
+        isOverlayShown = false
 
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .hideOverlay, object: nil)
         }
 
-        print("🎯 Hotkey released - hiding overlay")
+        print("🎯 Hotkey pressed - hiding overlay")
     }
 
     // MARK: - Public API
-
-    /// Test if the hotkey would trigger with current modifiers
-    func isHotkeyActive() -> Bool {
-        return isCurrentlyPressed
-    }
 
     /// Get the hotkey description
     var hotkeyDescription: String {
@@ -281,13 +212,13 @@ class HotkeyService: ObservableObject {
     /// Update hotkey configuration (called when user changes settings)
     func updateHotkey(_ config: AppPreferences.HotkeyConfiguration) {
         targetKeyCode = config.cgKeyCode
-        requiredModifiers = config.cgModifiers
-        print("🔄 Updated hotkey to: \(config.displayString)")
-    }
+        targetModifiers = config.cgModifiers
 
-    /// Update hotkey mode (called when user changes settings)
-    func updateHotkeyMode(_ mode: HotkeyMode) {
-        hotkeyMode = mode
-        print("🔄 Updated hotkey mode to: \(mode.rawValue)")
+        // Re-register with new hotkey
+        if eventHandlerRef != nil {
+            registerHotkey()
+        }
+
+        print("🔄 Updated hotkey to: \(config.displayString)")
     }
 }

@@ -95,13 +95,6 @@ class PreferencesManager: ObservableObject {
         }
     }
 
-    /// Update the hotkey mode
-    func updateHotkeyMode(_ mode: HotkeyMode) {
-        updatePreferences { current in
-            current.hotkeyMode = mode
-        }
-    }
-
     /// Update the appearance mode
     func updateAppearanceMode(_ mode: AppearanceMode) {
         updatePreferences { current in
@@ -123,11 +116,6 @@ class PreferencesManager: ObservableObject {
     /// Get the current global hotkey configuration
     var globalHotkey: AppPreferences.HotkeyConfiguration {
         return preferences.globalHotkey
-    }
-
-    /// Get the current hotkey mode
-    var hotkeyMode: HotkeyMode {
-        return preferences.hotkeyMode
     }
 
     /// Get the current appearance mode

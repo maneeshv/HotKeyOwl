@@ -8,9 +8,6 @@ extension Notification.Name {
     /// Posted when the global hotkey is released
     static let hideOverlay = Notification.Name("com.docketai.HotKeyOwl.hideOverlay")
 
-    /// Posted when the event tap needs to be re-enabled
-    static let eventTapDisabled = Notification.Name("com.docketai.HotKeyOwl.eventTapDisabled")
-
     // MARK: - iCloud Sync Notifications
 
     /// Posted when the iCloud sync state changes

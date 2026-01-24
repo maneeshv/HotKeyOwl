@@ -23,7 +23,6 @@ struct SettingsView: View {
     let onCancel: () -> Void
 
     @State private var workingConfig: AppPreferences.HotkeyConfiguration
-    @State private var workingHotkeyMode: HotkeyMode
     @State private var workingAppearanceMode: AppearanceMode
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -36,7 +35,6 @@ struct SettingsView: View {
         self.onSave = onSave
         self.onCancel = onCancel
         self._workingConfig = State(initialValue: preferencesManager.globalHotkey)
-        self._workingHotkeyMode = State(initialValue: preferencesManager.hotkeyMode)
         self._workingAppearanceMode = State(initialValue: preferencesManager.appearanceMode)
     }
 
@@ -51,7 +49,6 @@ struct SettingsView: View {
                     case .general:
                         GeneralSettingsView(
                             workingConfig: $workingConfig,
-                            workingHotkeyMode: $workingHotkeyMode,
                             workingAppearanceMode: $workingAppearanceMode,
                             onValidationError: { message in
                                 alertMessage = message
@@ -99,13 +96,11 @@ struct SettingsView: View {
         // Update preferences
         preferencesManager.updatePreferences { current in
             current.globalHotkey = workingConfig
-            current.hotkeyMode = workingHotkeyMode
             current.appearanceMode = workingAppearanceMode
         }
 
         // Update hotkey service
         hotkeyService.updateHotkey(workingConfig)
-        hotkeyService.updateHotkeyMode(workingHotkeyMode)
 
         // Call save callback
         onSave()
