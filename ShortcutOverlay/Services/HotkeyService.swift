@@ -8,7 +8,29 @@ private func hotkeyCallback(
     event: EventRef?,
     userData: UnsafeMutableRawPointer?
 ) -> OSStatus {
-    guard let userData = userData else {
+    guard let event = event, let userData = userData else {
+        return OSStatus(eventNotHandledErr)
+    }
+
+    // Extract the hotkey ID from the event to verify it's ours
+    var hotkeyID = EventHotKeyID()
+    let status = GetEventParameter(
+        event,
+        EventParamName(kEventParamDirectObject),
+        EventParamType(typeEventHotKeyID),
+        nil,
+        MemoryLayout<EventHotKeyID>.size,
+        nil,
+        &hotkeyID
+    )
+
+    guard status == noErr else {
+        return OSStatus(eventNotHandledErr)
+    }
+
+    // Verify this is our hotkey (not another app's or a future hotkey we might add)
+    guard hotkeyID.signature == HotkeyService.hotkeySignature,
+          hotkeyID.id == HotkeyService.hotkeyID else {
         return OSStatus(eventNotHandledErr)
     }
 
@@ -27,8 +49,8 @@ class HotkeyService: ObservableObject {
     // Carbon Hot Key references
     private var hotkeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
-    private static let hotkeySignature = OSType(0x484B5759)  // "HKWY"
-    private static let hotkeyID: UInt32 = 1
+    static let hotkeySignature = OSType(0x484B5759)  // "HKWY"
+    static let hotkeyID: UInt32 = 1
 
     // Target hotkey (configurable)
     private var targetKeyCode: CGKeyCode
@@ -46,10 +68,24 @@ class HotkeyService: ObservableObject {
         let hotkey = preferencesManager.globalHotkey
         self.targetKeyCode = hotkey.cgKeyCode
         self.targetModifiers = hotkey.cgModifiers
+
+        // Observe external overlay dismissals to keep state in sync
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleExternalOverlayHide),
+            name: .hideOverlay,
+            object: nil
+        )
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(self)
         stopMonitoring()
+    }
+
+    /// Sync state when overlay is hidden externally (e.g., clicked outside)
+    @objc private func handleExternalOverlayHide() {
+        isOverlayShown = false
     }
 
     // MARK: - Monitoring Control
@@ -159,7 +195,8 @@ class HotkeyService: ObservableObject {
     // MARK: - Event Handling
 
     /// Called when the hotkey is pressed - toggles overlay visibility
-    func handleHotkeyPressed() {
+    /// Note: Called from hotkeyCallback, needs to be internal for file-scope access
+    fileprivate func handleHotkeyPressed() {
         // Debounce rapid triggers
         let now = Date()
         guard now.timeIntervalSince(lastTriggerTime) >= minimumTriggerInterval else {
