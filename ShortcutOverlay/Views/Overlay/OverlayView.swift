@@ -74,6 +74,10 @@ struct OverlayView: View {
                 action: requestOpenEditor
             )
         )
+        .background(
+            // Handle Escape key: clear search first, then dismiss overlay
+            EscapeKeyHandler(searchText: $searchText)
+        )
     }
 
     // MARK: - Private Methods
@@ -381,6 +385,77 @@ class KeyboardShortcutNSView: NSView {
             }
             return event
         }
+    }
+
+    private func stopMonitoring() {
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+            localMonitor = nil
+        }
+    }
+
+    deinit {
+        stopMonitoring()
+    }
+}
+
+// MARK: - Escape Key Handler
+
+/// A view that handles Escape key presses to clear search or dismiss overlay
+struct EscapeKeyHandler: NSViewRepresentable {
+    @Binding var searchText: String
+
+    func makeNSView(context: Context) -> EscapeKeyNSView {
+        let view = EscapeKeyNSView()
+        view.searchTextBinding = _searchText
+        return view
+    }
+
+    func updateNSView(_ nsView: EscapeKeyNSView, context: Context) {
+        nsView.searchTextBinding = _searchText
+    }
+}
+
+/// NSView that monitors for Escape key presses
+class EscapeKeyNSView: NSView {
+    var searchTextBinding: Binding<String>?
+
+    private var localMonitor: Any?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil {
+            startMonitoring()
+        } else {
+            stopMonitoring()
+        }
+    }
+
+    private func startMonitoring() {
+        guard localMonitor == nil else { return }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return event }
+
+            // Check for Escape key (keyCode 53)
+            if event.keyCode == 53 {
+                return self.handleEscapeKey()
+            }
+            return event
+        }
+    }
+
+    private func handleEscapeKey() -> NSEvent? {
+        // If search text is non-empty, clear it (first Escape)
+        if let binding = searchTextBinding, !binding.wrappedValue.isEmpty {
+            DispatchQueue.main.async {
+                binding.wrappedValue = ""
+            }
+            return nil // Consume the event
+        }
+
+        // If search text is empty, dismiss the overlay (second Escape)
+        NotificationCenter.default.post(name: .hideOverlay, object: nil)
+        return nil // Consume the event
     }
 
     private func stopMonitoring() {

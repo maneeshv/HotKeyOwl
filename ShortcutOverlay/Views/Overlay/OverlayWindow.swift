@@ -4,6 +4,11 @@ import SwiftUI
 /// A floating, non-activating overlay window that displays shortcuts
 class OverlayWindow: NSPanel {
 
+    // MARK: - Properties
+
+    /// Global mouse event monitor for click-outside dismissal
+    private var globalMouseMonitor: Any?
+
     // MARK: - Initialization
 
     init<Content: View>(contentView: Content) {
@@ -48,6 +53,7 @@ class OverlayWindow: NSPanel {
     /// Show the overlay with animation
     func show(animated: Bool = true) {
         self.makeKeyAndOrderFront(nil)
+        startOutsideClickMonitoring()
 
         if animated {
             NSAnimationContext.runAnimationGroup { context in
@@ -62,6 +68,8 @@ class OverlayWindow: NSPanel {
 
     /// Hide the overlay with animation
     func hide(animated: Bool = true) {
+        stopOutsideClickMonitoring()
+
         if animated {
             NSAnimationContext.runAnimationGroup({ context in
                 context.duration = 0.1  // Fast fade-out for snappy feel
@@ -118,5 +126,42 @@ class OverlayWindow: NSPanel {
             x: currentCenter.x - size.width / 2,
             y: currentCenter.y - size.height / 2
         ))
+    }
+
+    // MARK: - Click-Outside Detection
+
+    /// Start monitoring for clicks outside the window
+    private func startOutsideClickMonitoring() {
+        guard globalMouseMonitor == nil else { return }
+
+        globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] event in
+            self?.handleGlobalMouseDown(event)
+        }
+    }
+
+    /// Stop monitoring for clicks outside the window
+    private func stopOutsideClickMonitoring() {
+        if let monitor = globalMouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMouseMonitor = nil
+        }
+    }
+
+    /// Handle global mouse down event
+    private func handleGlobalMouseDown(_ event: NSEvent) {
+        // Convert the click location to screen coordinates
+        let clickLocation = event.locationInWindow
+
+        // For global events, locationInWindow is already in screen coordinates
+        // Check if the click is outside this window's frame
+        if !self.frame.contains(clickLocation) {
+            NotificationCenter.default.post(name: .hideOverlay, object: nil)
+        }
+    }
+
+    deinit {
+        stopOutsideClickMonitoring()
     }
 }
