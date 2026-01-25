@@ -1,7 +1,7 @@
 name: ShortcutOverlay
 
 options:
-  bundleIdPrefix: com.docketai
+  bundleIdPrefix: io.hotkeyowl
   deploymentTarget:
     macOS: "13.0"
   createIntermediateGroups: true
@@ -26,7 +26,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: HotKeyOwl
-        PRODUCT_BUNDLE_IDENTIFIER: com.docketai.HotKeyOwl
+        PRODUCT_BUNDLE_IDENTIFIER: io.hotkeyowl.HotKeyOwl
         INFOPLIST_FILE: ShortcutOverlay/App/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShortcutOverlay/Resources/ShortcutOverlay.entitlements
         CODE_SIGN_IDENTITY: "-"

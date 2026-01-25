@@ -77,6 +77,14 @@ if [ -d "$APP_PATH" ]; then
         echo ""
         echo "💡 Launch $APP_NAME and grant Accessibility permission when prompted"
     fi
+
+    # Optionally create DMG for distribution
+    echo ""
+    read -p "Create DMG for distribution? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        "$PROJECT_DIR/scripts/create-dmg.sh"
+    fi
 else
     echo ""
     echo "❌ Build failed!"

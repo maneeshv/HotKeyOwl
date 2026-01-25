@@ -4,7 +4,7 @@
 # Change these values to rename the app
 
 APP_NAME="HotKeyOwl"
-BUNDLE_ID="com.docketai.HotKeyOwl"
+BUNDLE_ID="io.hotkeyowl.HotKeyOwl"
 
 # Xcode project settings (these are separate from the display name)
 SCHEME="ShortcutOverlay"

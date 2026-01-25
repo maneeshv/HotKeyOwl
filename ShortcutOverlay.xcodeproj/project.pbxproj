@@ -11,16 +11,21 @@
 		0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */; };
 		26FC52A71EB9707F623EFA42 /* iCloudSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E63D33569DC2791E2A156E /* iCloudSyncSettingsView.swift */; };
 		365AB22B694F1B6C9AF0DD61 /* GlassModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC870BDAD69A09C0814F5E61 /* GlassModifiers.swift */; };
-		E8B2C9E9D5A14C2A9F5E7B21 /* OverlayTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1E2F3A4B5C6D7E8F90123 /* OverlayTheme.swift */; };
 		38A5BC2E2B52587E2F5E65C5 /* VisualEffectBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B3276819CB5D0F6EFFCD09 /* VisualEffectBlur.swift */; };
 		3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */; };
 		3F0C4DFB1E40E60BD9B8EB16 /* ShortcutItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A565DBFEECF44B49105D6E /* ShortcutItem.swift */; };
+		443BCE66B58B12D8B7DCF91C /* iCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11FB4C3AC4664DCC11D465E /* iCloudSyncCoordinator.swift */; };
 		48367D7802D690D57AA24B8B /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7E03823B24CB153DC779B5 /* PermissionManager.swift */; };
+		484DBE823A90B0F01291A520 /* EditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EC290E7851022CC919AF58 /* EditorViewModel.swift */; };
 		514560114139174C970CCEBE /* AppMonitorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D194CB90CCF8F8983653D984 /* AppMonitorService.swift */; };
 		60021C1324A8B5E44DDB213D /* AppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0504ACBA1B7954A7FB925BCE /* AppShortcuts.swift */; };
+		6B39A6B4BB21F6167EC92E9F /* OverlayTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373D90ABB06F7A0CB700EB49 /* OverlayTheme.swift */; };
 		6C7DCBC8519040C2093AD3AA /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47FA7540E4C5AAEB841A4A5 /* AppConstants.swift */; };
 		6CAA07DF7BB6A2C7A4BA8BB1 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38966DCCD570D9BCA4E734E /* LaunchAtLoginService.swift */; };
 		6D973431766BB0495B9313CD /* SyncMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FBF43FCF1E8170F9FA1B3B /* SyncMetadata.swift */; };
+		739DD503087BF1C08B8568C5 /* ShortcutsPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF1FE3DC8A81DE543134823 /* ShortcutsPersistence.swift */; };
+		7498859C4F8FB4119CE6790F /* PreferencesPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306287C8AD5E4F11D21D1BC8 /* PreferencesPersistence.swift */; };
+		797CDE1FF4C6524B0FD886A9 /* iCloudSyncPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88FF1F45CE7C7406E3822C9 /* iCloudSyncPipeline.swift */; };
 		7E8CF62C927D3E397CB7C36A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05A6E5C4F307DBB49CCF6F05 /* Assets.xcassets */; };
 		8321FB44C1BCCD43C69C64EA /* AppHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1315C7D56911E2C07294C313 /* AppHeaderView.swift */; };
 		85568CA6BEE6CC0F385403E3 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294D220D3C641D2FEF198B45 /* HotkeyRecorderView.swift */; };
@@ -40,14 +45,9 @@
 		E232C6554F168386510929DB /* ShortcutParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B6A0012E552158AC1C5FCA /* ShortcutParser.swift */; };
 		E2F5DC3B13873AB243A06ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */; };
 		F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620507EDBC653628DF55F87F /* ShortcutOverlayApp.swift */; };
+		F89B12E83A9A824B4C3CC03A /* ShortcutGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20AD8ED4300F1DBA2C78C8D9 /* ShortcutGrouping.swift */; };
 		F9FABE7CADF30C3F39053DB6 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25864CCA2E27CACCB49A655 /* AppInfo.swift */; };
 		FBB26022DC126DE17476F2FF /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */; };
-		A1B2C3D4E5F60718293A4B5C /* PreferencesPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6071829304A5B6D /* PreferencesPersistence.swift */; };
-		C3D4E5F6071829304A5B6C7E /* ShortcutsPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F607182930415B6C7D8F /* ShortcutsPersistence.swift */; };
-		E5F60718293A4B5C6D7E8F01 /* iCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6071829304A5B6C7D8E9F02 /* iCloudSyncCoordinator.swift */; };
-		071829304A5B6C7D8E9F0123 /* iCloudSyncPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1829304A5B6C7D8E9F012345 /* iCloudSyncPipeline.swift */; };
-		29304A5B6C7D8E9F01234567 /* EditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304A5B6C7D8E9F0123456789 /* EditorViewModel.swift */; };
-		5B6C7D8E9F01234567890ABC /* ShortcutGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7D8E9F01234567890ABCDE /* ShortcutGrouping.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,10 +59,15 @@
 		1315C7D56911E2C07294C313 /* AppHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHeaderView.swift; sourceTree = "<group>"; };
 		1A04BA7230BB9CA6EE25C9F6 /* Notification+Names.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Names.swift"; sourceTree = "<group>"; };
 		1C84639C32C2EF5E2091BDF5 /* ShortcutRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRowView.swift; sourceTree = "<group>"; };
+		20AD8ED4300F1DBA2C78C8D9 /* ShortcutGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutGrouping.swift; sourceTree = "<group>"; };
 		25B6A0012E552158AC1C5FCA /* ShortcutParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutParser.swift; sourceTree = "<group>"; };
 		294D220D3C641D2FEF198B45 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		2AFEB8E211EA09FC563EB063 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		306287C8AD5E4F11D21D1BC8 /* PreferencesPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesPersistence.swift; sourceTree = "<group>"; };
+		373D90ABB06F7A0CB700EB49 /* OverlayTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTheme.swift; sourceTree = "<group>"; };
+		3BF1FE3DC8A81DE543134823 /* ShortcutsPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsPersistence.swift; sourceTree = "<group>"; };
 		420BEA3BA93FED205AA6A7A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		46EC290E7851022CC919AF58 /* EditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorViewModel.swift; sourceTree = "<group>"; };
 		49A565DBFEECF44B49105D6E /* ShortcutItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutItem.swift; sourceTree = "<group>"; };
 		4C9BE8CAA898CAA3ACAE939E /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		5826BD717EF2106ABA788E03 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -71,11 +76,11 @@
 		8028EBB14F56745C031F2DA3 /* PreferencesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesManager.swift; sourceTree = "<group>"; };
 		84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
 		9D7E03823B24CB153DC779B5 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		A11FB4C3AC4664DCC11D465E /* iCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncCoordinator.swift; sourceTree = "<group>"; };
 		A3FBF43FCF1E8170F9FA1B3B /* SyncMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMetadata.swift; sourceTree = "<group>"; };
 		A80BA50091C1850C7F381900 /* KeyCapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCapView.swift; sourceTree = "<group>"; };
 		A8B3276819CB5D0F6EFFCD09 /* VisualEffectBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualEffectBlur.swift; sourceTree = "<group>"; };
 		AC870BDAD69A09C0814F5E61 /* GlassModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassModifiers.swift; sourceTree = "<group>"; };
-		C0D1E2F3A4B5C6D7E8F90123 /* OverlayTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTheme.swift; sourceTree = "<group>"; };
 		B1A2A9CA88DC29D4C2983831 /* iCloudSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSettingsView.swift; sourceTree = "<group>"; };
 		B47FA7540E4C5AAEB841A4A5 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		B640023BFE1CCD2242677213 /* ShortcutOverlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShortcutOverlay.entitlements; sourceTree = "<group>"; };
@@ -87,14 +92,9 @@
 		DF7A319CD1F09EE3B2EA6864 /* ShortcutRecorderField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderField.swift; sourceTree = "<group>"; };
 		E25864CCA2E27CACCB49A655 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
+		E88FF1F45CE7C7406E3822C9 /* iCloudSyncPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncPipeline.swift; sourceTree = "<group>"; };
 		F38966DCCD570D9BCA4E734E /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 		F3E63D33569DC2791E2A156E /* iCloudSyncSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncSettingsView.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6071829304A5B6D /* PreferencesPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesPersistence.swift; sourceTree = "<group>"; };
-		D4E5F607182930415B6C7D8F /* ShortcutsPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsPersistence.swift; sourceTree = "<group>"; };
-		F6071829304A5B6C7D8E9F02 /* iCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncCoordinator.swift; sourceTree = "<group>"; };
-		1829304A5B6C7D8E9F012345 /* iCloudSyncPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncPipeline.swift; sourceTree = "<group>"; };
-		304A5B6C7D8E9F0123456789 /* EditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorViewModel.swift; sourceTree = "<group>"; };
-		6C7D8E9F01234567890ABCDE /* ShortcutGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutGrouping.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -172,15 +172,15 @@
 				D194CB90CCF8F8983653D984 /* AppMonitorService.swift */,
 				84F2A080508E0E6CAF5E9C66 /* ConfigurationManager.swift */,
 				E7A15375EDE162C57DA6E2A1 /* HotkeyService.swift */,
-				F6071829304A5B6C7D8E9F02 /* iCloudSyncCoordinator.swift */,
-				1829304A5B6C7D8E9F012345 /* iCloudSyncPipeline.swift */,
+				A11FB4C3AC4664DCC11D465E /* iCloudSyncCoordinator.swift */,
+				E88FF1F45CE7C7406E3822C9 /* iCloudSyncPipeline.swift */,
 				0C8FDA40234168207E616273 /* iCloudSyncService.swift */,
 				F38966DCCD570D9BCA4E734E /* LaunchAtLoginService.swift */,
 				9D7E03823B24CB153DC779B5 /* PermissionManager.swift */,
 				8028EBB14F56745C031F2DA3 /* PreferencesManager.swift */,
-				B2C3D4E5F6071829304A5B6D /* PreferencesPersistence.swift */,
+				306287C8AD5E4F11D21D1BC8 /* PreferencesPersistence.swift */,
+				3BF1FE3DC8A81DE543134823 /* ShortcutsPersistence.swift */,
 				C7377920B768C6CCDC1C0926 /* ShortcutStore.swift */,
-				D4E5F607182930415B6C7D8F /* ShortcutsPersistence.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -197,10 +197,18 @@
 			path = Overlay;
 			sourceTree = "<group>";
 		};
+		BF9EC7D3220C1C5A669F8985 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				46EC290E7851022CC919AF58 /* EditorViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		C1AD71D5D78B8ED2B1757BF3 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				6C7D8E9F01234567890ABCDE /* ShortcutGrouping.swift */,
+				20AD8ED4300F1DBA2C78C8D9 /* ShortcutGrouping.swift */,
 				25B6A0012E552158AC1C5FCA /* ShortcutParser.swift */,
 			);
 			path = Utilities;
@@ -215,7 +223,7 @@
 				904CF70E1E1D7939C04D43DC /* Resources */,
 				A92767F1C18B1983CBB24A48 /* Services */,
 				C1AD71D5D78B8ED2B1757BF3 /* Utilities */,
-				4A5B6C7D8E9F012345678901 /* ViewModels */,
+				BF9EC7D3220C1C5A669F8985 /* ViewModels */,
 				A64147C7E194C8487243DD0A /* Views */,
 			);
 			path = ShortcutOverlay;
@@ -246,18 +254,10 @@
 			isa = PBXGroup;
 			children = (
 				AC870BDAD69A09C0814F5E61 /* GlassModifiers.swift */,
-				C0D1E2F3A4B5C6D7E8F90123 /* OverlayTheme.swift */,
+				373D90ABB06F7A0CB700EB49 /* OverlayTheme.swift */,
 				A8B3276819CB5D0F6EFFCD09 /* VisualEffectBlur.swift */,
 			);
 			path = Shared;
-			sourceTree = "<group>";
-		};
-		4A5B6C7D8E9F012345678901 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				304A5B6C7D8E9F0123456789 /* EditorViewModel.swift */,
-			);
-			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -334,35 +334,35 @@
 				60021C1324A8B5E44DDB213D /* AppShortcuts.swift in Sources */,
 				FBB26022DC126DE17476F2FF /* ConfigurationManager.swift in Sources */,
 				9C3E057EC409FBF3A7FE363A /* EditorView.swift in Sources */,
-				29304A5B6C7D8E9F01234567 /* EditorViewModel.swift in Sources */,
+				484DBE823A90B0F01291A520 /* EditorViewModel.swift in Sources */,
 				093F0AEF91253271A45294AD /* GeneralSettingsView.swift in Sources */,
 				365AB22B694F1B6C9AF0DD61 /* GlassModifiers.swift in Sources */,
-				E8B2C9E9D5A14C2A9F5E7B21 /* OverlayTheme.swift in Sources */,
 				85568CA6BEE6CC0F385403E3 /* HotkeyRecorderView.swift in Sources */,
 				0E93752DA53CBE61E32C1953 /* HotkeyService.swift in Sources */,
 				865666F491BDD26DA7210641 /* KeyCapView.swift in Sources */,
 				6CAA07DF7BB6A2C7A4BA8BB1 /* LaunchAtLoginService.swift in Sources */,
 				9936A35A2A68781BA2BE757C /* Notification+Names.swift in Sources */,
+				6B39A6B4BB21F6167EC92E9F /* OverlayTheme.swift in Sources */,
 				D326C615590786FB6738BC10 /* OverlayView.swift in Sources */,
 				D70D765940851D25B665084B /* OverlayWindow.swift in Sources */,
 				48367D7802D690D57AA24B8B /* PermissionManager.swift in Sources */,
 				CA0D620C3B18638E4D23215C /* PreferencesManager.swift in Sources */,
-				A1B2C3D4E5F60718293A4B5C /* PreferencesPersistence.swift in Sources */,
+				7498859C4F8FB4119CE6790F /* PreferencesPersistence.swift in Sources */,
 				C597FF98A913B72CA13D7C09 /* SettingsSidebar.swift in Sources */,
 				AAE8212E9FDC26B05959CDBE /* SettingsView.swift in Sources */,
+				F89B12E83A9A824B4C3CC03A /* ShortcutGrouping.swift in Sources */,
 				3F0C4DFB1E40E60BD9B8EB16 /* ShortcutItem.swift in Sources */,
 				F04AE4D91649C7368AD2843B /* ShortcutOverlayApp.swift in Sources */,
-				5B6C7D8E9F01234567890ABC /* ShortcutGrouping.swift in Sources */,
 				E232C6554F168386510929DB /* ShortcutParser.swift in Sources */,
 				9E618775772FDA60A22EE558 /* ShortcutRecorderField.swift in Sources */,
 				C9C11DDBE6486F9A3044FA23 /* ShortcutRowView.swift in Sources */,
 				3BC6FB1114743F3137EE8CA2 /* ShortcutStore.swift in Sources */,
-				C3D4E5F6071829304A5B6C7E /* ShortcutsPersistence.swift in Sources */,
+				739DD503087BF1C08B8568C5 /* ShortcutsPersistence.swift in Sources */,
 				6D973431766BB0495B9313CD /* SyncMetadata.swift in Sources */,
 				38A5BC2E2B52587E2F5E65C5 /* VisualEffectBlur.swift in Sources */,
 				B345082DA72CB4318EF571A7 /* iCloudSettingsView.swift in Sources */,
-				E5F60718293A4B5C6D7E8F01 /* iCloudSyncCoordinator.swift in Sources */,
-				071829304A5B6C7D8E9F0123 /* iCloudSyncPipeline.swift in Sources */,
+				443BCE66B58B12D8B7DCF91C /* iCloudSyncCoordinator.swift in Sources */,
+				797CDE1FF4C6524B0FD886A9 /* iCloudSyncPipeline.swift in Sources */,
 				AFFD5CFBF5B2B8432FB0D43E /* iCloudSyncService.swift in Sources */,
 				26FC52A71EB9707F623EFA42 /* iCloudSyncSettingsView.swift in Sources */,
 			);
@@ -386,7 +386,7 @@
 				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.HotKeyOwl;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hotkeyowl.HotKeyOwl;
 				PRODUCT_NAME = HotKeyOwl;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -467,7 +467,7 @@
 				INFOPLIST_FILE = ShortcutOverlay/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.docketai.HotKeyOwl;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hotkeyowl.HotKeyOwl;
 				PRODUCT_NAME = HotKeyOwl;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;

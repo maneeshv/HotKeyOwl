@@ -12,13 +12,13 @@
 	<true/>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.docketai.ShortcutOverlay</string>
+		<string>iCloud.io.hotkeyowl.ShortcutOverlay</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
 		<string>CloudDocuments</string>
 	</array>
 	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
-	<string>$(TeamIdentifierPrefix)com.docketai.ShortcutOverlay</string>
+	<string>$(TeamIdentifierPrefix)io.hotkeyowl.ShortcutOverlay</string>
 </dict>
 </plist>
