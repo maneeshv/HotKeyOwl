@@ -1,7 +1,8 @@
-# ShortcutOverlay
+# HotKeyOwl
 
 A macOS menu bar utility that displays keyboard shortcuts for the currently active application via a beautiful, toggle-activated overlay.
 
+[![Build](https://github.com/maneeshv/HotKeyOwl/actions/workflows/build.yml/badge.svg)](https://github.com/maneeshv/HotKeyOwl/actions/workflows/build.yml)
 <img src="https://img.shields.io/badge/macOS-13.0+-blue.svg" alt="macOS 13.0+">
 <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift 5.9">
 <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License">
@@ -23,7 +24,7 @@ A macOS menu bar utility that displays keyboard shortcuts for the currently acti
 **Press Your Hotkey** (default: `⌃⌥⌘0`): Overlay appears showing shortcuts for the current app
 **Press Again**: Overlay disappears instantly
 
-The overlay stays on top, centered, and doesn't steal focus from your work.
+The overlay stays on top, centered, and preserves your active window focus.
 
 **New in v1.1:**
 - 🎛️ Customize your global hotkey in Settings
@@ -34,7 +35,7 @@ The overlay stays on top, centered, and doesn't steal focus from your work.
 
 - macOS 13.0 (Ventura) or later
 - Xcode 14.0+ (for building)
-- Accessibility permission (for global keyboard monitoring)
+- Accessibility permission (for hotkey registration)
 
 ## Installation
 
@@ -42,8 +43,8 @@ The overlay stays on top, centered, and doesn't steal focus from your work.
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/ShortcutOverlay.git
-   cd ShortcutOverlay
+   git clone https://github.com/maneeshv/HotKeyOwl.git
+   cd HotKeyOwl
    ```
 
 2. **Build the app**:
@@ -68,7 +69,7 @@ This builds and runs the Debug version automatically.
 
 ## Permissions
 
-ShortcutOverlay requires **Accessibility** permission to monitor the global hotkey.
+ShortcutOverlay requires **Accessibility** permission to register the global hotkey.
 
 ### Granting Permission
 
@@ -82,7 +83,7 @@ ShortcutOverlay requires **Accessibility** permission to monitor the global hotk
 
 ### Why This Permission?
 
-ShortcutOverlay uses macOS's Carbon Hot Key API to detect when you press your configured hotkey, regardless of which app is active. This requires Accessibility permission for security reasons.
+ShortcutOverlay uses macOS's Carbon Hot Key API to respond to your configured hotkey system-wide. This requires Accessibility permission as per macOS security requirements.
 
 ## Usage
 
@@ -283,7 +284,7 @@ The overlay is an `NSPanel` with:
 - `styleMask: [.borderless, .nonactivatingPanel]`
 - `level: .floating`
 - `collectionBehavior: [.canJoinAllSpaces, .fullScreenAuxiliary]`
-- `canBecomeKey = false` (doesn't steal focus)
+- `canBecomeKey = false` (preserves active window focus)
 
 ### Data Storage
 
@@ -334,11 +335,11 @@ Format:
 - The overlay will still appear but show "No Shortcuts Configured"
 - Click the menu bar icon → "Edit Shortcuts..." to add shortcuts
 
-### Event Tap Disabled
+### Hotkey Handler Paused
 
-If you see "Event tap disabled" in logs:
+If you see "Hotkey handler paused" in logs:
 - This can happen under heavy system load
-- The app automatically re-enables the tap
+- The app automatically resumes the handler
 - If persistent, restart the app
 
 ### Keyboard Not Responding
@@ -361,8 +362,8 @@ A: Shortcuts are stored in `~/Library/Application Support/ShortcutOverlay/shortc
 **Q: Why does the overlay sometimes show for the wrong app?**
 A: There's a brief delay (~100ms) in detecting app switches. Try holding the hotkey slightly longer.
 
-**Q: Is this safe? Does it log keystrokes?**
-A: Yes, it's completely safe. The app only monitors your configured hotkey and doesn't log any other keystrokes.
+**Q: Is this safe?**
+A: Yes, it's completely safe. The app only responds to your configured hotkey and stores your shortcut reference data locally.
 
 ## Roadmap
 
@@ -420,9 +421,8 @@ SOFTWARE.
 
 ## Contact
 
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/ShortcutOverlay/issues)
-- **Email**: your.email@example.com
+- **GitHub**: [@maneeshv](https://github.com/maneeshv)
+- **Issues**: [GitHub Issues](https://github.com/maneeshv/HotKeyOwl/issues)
 
 ---
 

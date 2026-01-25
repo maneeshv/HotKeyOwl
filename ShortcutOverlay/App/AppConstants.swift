@@ -6,7 +6,7 @@ enum AppConstants {
     static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "HotKeyOwl"
 
     /// Bundle identifier from Info.plist
-    static let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.docketai.HotKeyOwl"
+    static let bundleIdentifier = Bundle.main.bundleIdentifier ?? "io.hotkeyowl.HotKeyOwl"
 
     /// App Support directory name (used for data storage)
     static let appSupportDirectoryName = "HotKeyOwl"
